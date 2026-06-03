@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Sandbox</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #toolbar {
+            display: flex;
+            gap: 12px;
+            padding: 12px 20px;
+            background: #141428;
+            width: 100%;
+            align-items: center;
+            border-bottom: 2px solid #2a2a4a;
+            flex-wrap: wrap;
+            z-index: 10;
+        }
+
+        #toolbar h1 {
+            font-size: 18px;
+            color: #7b8cff;
+            margin-right: 12px;
+        }
+
+        .tool-btn {
+            padding: 8px 16px;
+            border: 2px solid #3a3a5a;
+            background: #1e1e3a;
+            color: #c0c0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover { background: #2a2a5a; border-color: #5a5a8a; }
+        .tool-btn.active { background: #3a3a7a; border-color: #7b8cff; color: #fff; }
+
+        .separator {
+            width: 2px;
+            height: 30px;
+            background: #2a2a4a;
+        }
+
+        #info {
+            margin-left: auto;
+            font-size: 12px;
+            color: #6a6a8a;
+        }
+
+        canvas {
+            display: block;
+            cursor: crosshair;
+        }
+
+        #hud {
+            position: fixed;
+            bottom: 12px;
+            left: 12px;
+            font-size: 12px;
+            color: #5a5a8a;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <h1>Physics Sandbox</h1>
+        <button class="tool-btn active" data-tool="ball">Ball</button>
+        <button class="tool-btn" data-tool="box">Box</button>
+        <button class="tool-btn" data-tool="plank">Plank</button>
+        <div class="separator"></div>
+        <button class="tool-btn" data-tool="launch">Launch</button>
+        <button class="tool-btn" data-tool="drag">Drag</button>
+        <div class="separator"></div>
+        <button class="tool-btn" id="gravityToggle">Gravity: ON</button>
+        <button class="tool-btn" id="clearBtn">Clear</button>
+        <span id="info">Click to place | Drag to launch | Scroll to resize</span>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div id="hud">
+        <div id="fps">FPS: 0</div>
+        <div id="objCount">Objects: 0</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            const toolbar = document.getElementById('toolbar');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - toolbar.offsetHeight;
+            canvas.style.marginTop = '0';
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // --- Physics constants ---
+        const GRAVITY = 980;
+        const DAMPING = 0.999;
+        const RESTITUTION = 0.6;
+        const FRICTION = 0.3;
+        const SUB_STEPS = 4;
+
+        // --- State ---
+        let bodies = [];
+        let currentTool = 'ball';
+        let gravityOn = true;
+        let spawnSize = 25;
+        let dragBody = null;
+        let dragOffset = { x: 0, y: 0 };
+        let mouseDown = false;
+        let mouseStart = { x: 0, y: 0 };
+        let mousePos = { x: 0, y: 0 };
+        let launching = false;
+
+        // --- Body class ---
+        class Body {
+            constructor(x, y, type, opts = {}) {
+                this.x = x;
+                this.y = y;
+                this.vx = opts.vx || 0;
+                this.vy = opts.vy || 0;
+                this.type = type;
+                this.isStatic = opts.isStatic || false;
+                this.restitution = opts.restitution || RESTITUTION;
+
+                if (type === 'circle') {
+                    this.radius = opts.radius || 20;
+                    this.mass = Math.PI * this.radius * this.radius * 0.01;
+                    this.color = opts.color || this.randomColor();
+                } else {
+                    this.width = opts.width || 40;
+                    this.height = opts.height || 40;
+                    this.mass = this.width * this.height * 0.01;
+                    this.color = opts.color || this.randomColor();
+                    this.angle = opts.angle || 0;
+                    this.angularVel = 0;
+                }
+
+                if (this.isStatic) this.mass = Infinity;
+                this.inverseMass = this.isStatic ? 0 : 1 / this.mass;
+            }
+
+            randomColor() {
+                const colors = [
+                    '#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff',
+                    '#ff8cc8', '#a66cff', '#ff922b', '#20c997',
+                    '#748ffc', '#e599f7', '#ffa94d', '#69db7c'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update(dt) {
+                if (this.isStatic) return;
+
+                if (gravityOn) {
+                    this.vy += GRAVITY * dt;
+                }
+
+                this.vx *= DAMPING;
+                this.vy *= DAMPING;
+
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+
+                if (this.type === 'rect' && this.angularVel) {
+                    this.angle += this.angularVel * dt;
+                    this.angularVel *= 0.98;
+                }
+
+                this.constrainToBounds();
+            }
+
+            constrainToBounds() {
+                if (this.type === 'circle') {
+                    if (this.x - this.radius < 0) {
+                        this.x = this.radius;
+                        this.vx = Math.abs(this.vx) * this.restitution;
+                    }
+                    if (this.x + this.radius > canvas.width) {
+                        this.x = canvas.width - this.radius;
+                        this.vx = -Math.abs(this.vx) * this.restitution;
+                    }
+                    if (this.y + this.radius > canvas.height) {
+                        this.y = canvas.height - this.radius;
+                        this.vy = -Math.abs(this.vy) * this.restitution;
+                        this.vx *= (1 - FRICTION);
+                    }
+                    if (this.y - this.radius < 0) {
+                        this.y = this.radius;
+                        this.vy = Math.abs(this.vy) * this.restitution;
+                    }
+                } else {
+                    const halfW = this.width / 2;
+                    const halfH = this.height / 2;
+                    if (this.y + halfH > canvas.height) {
+                        this.y = canvas.height - halfH;
+                        this.vy = -Math.abs(this.vy) * this.restitution;
+                        this.vx *= (1 - FRICTION);
+                        this.angularVel *= 0.9;
+                    }
+                    if (this.y - halfH < 0) {
+                        this.y = halfH;
+                        this.vy = Math.abs(this.vy) * this.restitution;
+                    }
+                    if (this.x - halfW < 0) {
+                        this.x = halfW;
+                        this.vx = Math.abs(this.vx) * this.restitution;
+                    }
+                    if (this.x + halfW > canvas.width) {
+                        this.x = canvas.width - halfW;
+                        this.vx = -Math.abs(this.vx) * this.restitution;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.save();
+                if (this.type === 'circle') {
+                    const gradient = ctx.createRadialGradient(
+                        this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.1,
+                        this.x, this.y, this.radius
+                    );
+                    gradient.addColorStop(0, this.lighten(this.color, 40));
+                    gradient.addColorStop(1, this.color);
+
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    ctx.strokeStyle = this.darken(this.color, 30);
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(this.x - this.radius * 0.25, this.y - this.radius * 0.25, this.radius * 0.15, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.fill();
+                } else {
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.angle || 0);
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+                    ctx.strokeStyle = this.darken(this.color, 30);
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height / 3);
+                }
+                ctx.restore();
+            }
+
+            lighten(hex, percent) {
+                const num = parseInt(hex.slice(1), 16);
+                const r = Math.min(255, (num >> 16) + percent);
+                const g = Math.min(255, ((num >> 8) & 0x00FF) + percent);
+                const b = Math.min(255, (num & 0x0000FF) + percent);
+                return `rgb(${r},${g},${b})`;
+            }
+
+            darken(hex, percent) {
+                const num = parseInt(hex.slice(1), 16);
+                const r = Math.max(0, (num >> 16) - percent);
+                const g = Math.max(0, ((num >> 8) & 0x00FF) - percent);
+                const b = Math.max(0, (num & 0x0000FF) - percent);
+                return `rgb(${r},${g},${b})`;
+            }
+
+            containsPoint(px, py) {
+                if (this.type === 'circle') {
+                    const dx = px - this.x;
+                    const dy = py - this.y;
+                    return dx * dx + dy * dy <= this.radius * this.radius;
+                } else {
+                    return px >= this.x - this.width / 2 && px <= this.x + this.width / 2 &&
+                           py >= this.y - this.height / 2 && py <= this.y + this.height / 2;
+                }
+            }
+        }
+
+        // --- Collision detection & resolution ---
+        function resolveCollisions() {
+            for (let i = 0; i < bodies.length; i++) {
+                for (let j = i + 1; j < bodies.length; j++) {
+                    const a = bodies[i];
+                    const b = bodies[j];
+
+                    if (a.isStatic && b.isStatic) continue;
+
+                    if (a.type === 'circle' && b.type === 'circle') {
+                        circleVsCircle(a, b);
+                    } else if (a.type === 'circle' && b.type === 'rect') {
+                        circleVsRect(a, b);
+                    } else if (a.type === 'rect' && b.type === 'circle') {
+                        circleVsRect(b, a);
+                    } else {
+                        rectVsRect(a, b);
+                    }
+                }
+            }
+        }
+
+        function circleVsCircle(a, b) {
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const minDist = a.radius + b.radius;
+
+            if (dist >= minDist || dist === 0) return;
+
+            const nx = dx / dist;
+            const ny = dy / dist;
+            const overlap = minDist - dist;
+
+            const totalInvMass = a.inverseMass + b.inverseMass;
+            if (totalInvMass === 0) return;
+
+            a.x -= nx * overlap * (a.inverseMass / totalInvMass);
+            a.y -= ny * overlap * (a.inverseMass / totalInvMass);
+            b.x += nx * overlap * (b.inverseMass / totalInvMass);
+            b.y += ny * overlap * (b.inverseMass / totalInvMass);
+
+            const dvx = a.vx - b.vx;
+            const dvy = a.vy - b.vy;
+            const relVelDotN = dvx * nx + dvy * ny;
+
+            if (relVelDotN > 0) return;
+
+            const e = Math.min(a.restitution, b.restitution);
+            const impulse = -(1 + e) * relVelDotN / totalInvMass;
+
+            a.vx += impulse * a.inverseMass * nx;
+            a.vy += impulse * a.inverseMass * ny;
+            b.vx -= impulse * b.inverseMass * nx;
+            b.vy -= impulse * b.inverseMass * ny;
+        }
+
+        function circleVsRect(circle, rect) {
+            const cos = Math.cos(-rect.angle || 0);
+            const sin = Math.sin(-rect.angle || 0);
+
+            let localX = circle.x - rect.x;
+            let localY = circle.y - rect.y;
+            const rotX = localX * cos - localY * sin;
+            const rotY = localX * sin + localY * cos;
+
+            const halfW = rect.width / 2;
+            const halfH = rect.height / 2;
+
+            const closestX = Math.max(-halfW, Math.min(rotX, halfW));
+            const closestY = Math.max(-halfH, Math.min(rotY, halfH));
+
+            const dx = rotX - closestX;
+            const dy = rotY - closestY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist >= circle.radius || dist === 0) return;
+
+            const cosBack = Math.cos(rect.angle || 0);
+            const sinBack = Math.sin(rect.angle || 0);
+
+            let nx = dx / dist;
+            let ny = dy / dist;
+            const worldNx = nx * cosBack - ny * sinBack;
+            const worldNy = nx * sinBack + ny * cosBack;
+
+            const overlap = circle.radius - dist;
+            const totalInvMass = circle.inverseMass + rect.inverseMass;
+            if (totalInvMass === 0) return;
+
+            circle.x += worldNx * overlap * (circle.inverseMass / totalInvMass);
+            circle.y += worldNy * overlap * (circle.inverseMass / totalInvMass);
+            rect.x -= worldNx * overlap * (rect.inverseMass / totalInvMass);
+            rect.y -= worldNy * overlap * (rect.inverseMass / totalInvMass);
+
+            const dvx = circle.vx - rect.vx;
+            const dvy = circle.vy - rect.vy;
+            const relVelDotN = dvx * worldNx + dvy * worldNy;
+
+            if (relVelDotN > 0) return;
+
+            const e = Math.min(circle.restitution, rect.restitution);
+            const impulse = -(1 + e) * relVelDotN / totalInvMass;
+
+            circle.vx += impulse * circle.inverseMass * worldNx;
+            circle.vy += impulse * circle.inverseMass * worldNy;
+            rect.vx -= impulse * rect.inverseMass * worldNx;
+            rect.vy -= impulse * rect.inverseMass * worldNy;
+
+            if (rect.type === 'rect') {
+                const contactX = closestX;
+                const torque = contactX * worldNy - closestY * worldNx;
+                rect.angularVel += torque * impulse * 0.0001;
+            }
+        }
+
+        function rectVsRect(a, b) {
+            const overlapX = (a.width / 2 + b.width / 2) - Math.abs(a.x - b.x);
+            const overlapY = (a.height / 2 + b.height / 2) - Math.abs(a.y - b.y);
+
+            if (overlapX <= 0 || overlapY <= 0) return;
+
+            const totalInvMass = a.inverseMass + b.inverseMass;
+            if (totalInvMass === 0) return;
+
+            let nx, ny, overlap;
+            if (overlapX < overlapY) {
+                nx = a.x < b.x ? -1 : 1;
+                ny = 0;
+                overlap = overlapX;
+            } else {
+                nx = 0;
+                ny = a.y < b.y ? -1 : 1;
+                overlap = overlapY;
+            }
+
+            a.x += nx * overlap * (a.inverseMass / totalInvMass);
+            a.y += ny * overlap * (a.inverseMass / totalInvMass);
+            b.x -= nx * overlap * (b.inverseMass / totalInvMass);
+            b.y -= ny * overlap * (b.inverseMass / totalInvMass);
+
+            const dvx = a.vx - b.vx;
+            const dvy = a.vy - b.vy;
+            const relVelDotN = dvx * nx + dvy * ny;
+
+            if (relVelDotN > 0) return;
+
+            const e = Math.min(a.restitution, b.restitution);
+            const impulse = -(1 + e) * relVelDotN / totalInvMass;
+
+            a.vx += impulse * a.inverseMass * nx;
+            a.vy += impulse * a.inverseMass * ny;
+            b.vx -= impulse * b.inverseMass * nx;
+            b.vy -= impulse * b.inverseMass * ny;
+        }
+
+        // --- Rendering ---
+        function drawBackground() {
+            ctx.fillStyle = '#0a0a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#151530';
+            ctx.lineWidth = 1;
+            const gridSize = 40;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = '#1a1a3a';
+            ctx.fillRect(0, canvas.height - 3, canvas.width, 3);
+        }
+
+        function drawLaunchIndicator() {
+            if (!launching || currentTool !== 'launch') return;
+
+            const dx = mouseStart.x - mousePos.x;
+            const dy = mouseStart.y - mousePos.y;
+
+            ctx.beginPath();
+            ctx.moveTo(mouseStart.x, mouseStart.y);
+            ctx.lineTo(mousePos.x, mousePos.y);
+            ctx.strokeStyle = 'rgba(255, 100, 100, 0.6)';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([8, 4]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            const angle = Math.atan2(dy, dx);
+            const arrowLen = 12;
+            ctx.beginPath();
+            ctx.moveTo(mouseStart.x, mouseStart.y);
+            ctx.lineTo(mouseStart.x - arrowLen * Math.cos(angle - 0.4), mouseStart.y - arrowLen * Math.sin(angle - 0.4));
+            ctx.moveTo(mouseStart.x, mouseStart.y);
+            ctx.lineTo(mouseStart.x - arrowLen * Math.cos(angle + 0.4), mouseStart.y - arrowLen * Math.sin(angle + 0.4));
+            ctx.strokeStyle = 'rgba(255, 100, 100, 0.8)';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            const power = Math.sqrt(dx * dx + dy * dy);
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.font = '12px monospace';
+            ctx.fillText(`Power: ${Math.round(power)}`, mouseStart.x + 10, mouseStart.y - 10);
+        }
+
+        function drawSpawnPreview() {
+            if (launching || currentTool === 'drag' || currentTool === 'launch') return;
+
+            ctx.save();
+            ctx.globalAlpha = 0.3;
+
+            if (currentTool === 'ball') {
+                ctx.beginPath();
+                ctx.arc(mousePos.x, mousePos.y, spawnSize, 0, Math.PI * 2);
+                ctx.fillStyle = '#7b8cff';
+                ctx.fill();
+            } else if (currentTool === 'box') {
+                ctx.fillStyle = '#7b8cff';
+                ctx.fillRect(mousePos.x - spawnSize, mousePos.y - spawnSize, spawnSize * 2, spawnSize * 2);
+            } else if (currentTool === 'plank') {
+                ctx.fillStyle = '#7b8cff';
+                ctx.fillRect(mousePos.x - spawnSize * 3, mousePos.y - spawnSize / 3, spawnSize * 6, spawnSize * 0.66);
+            }
+
+            ctx.restore();
+        }
+
+        // --- Input ---
+        const toolbarEl = document.getElementById('toolbar');
+        const toolbarHeight = () => toolbarEl.offsetHeight;
+
+        canvas.addEventListener('mousedown', (e) => {
+            const x = e.offsetX;
+            const y = e.offsetY;
+            mouseDown = true;
+            mouseStart = { x, y };
+            mousePos = { x, y };
+
+            if (currentTool === 'drag') {
+                for (let i = bodies.length - 1; i >= 0; i--) {
+                    if (bodies[i].containsPoint(x, y)) {
+                        dragBody = bodies[i];
+                        dragOffset = { x: x - dragBody.x, y: y - dragBody.y };
+                        break;
+                    }
+                }
+            } else if (currentTool === 'launch') {
+                launching = true;
+            } else {
+                spawnBody(x, y);
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            mousePos = { x: e.offsetX, y: e.offsetY };
+
+            if (dragBody) {
+                dragBody.vx = (mousePos.x - dragOffset.x - dragBody.x) * 10;
+                dragBody.vy = (mousePos.y - dragOffset.y - dragBody.y) * 10;
+                dragBody.x = mousePos.x - dragOffset.x;
+                dragBody.y = mousePos.y - dragOffset.y;
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (launching && currentTool === 'launch') {
+                const dx = mouseStart.x - mousePos.x;
+                const dy = mouseStart.y - mousePos.y;
+                const ball = new Body(mouseStart.x, mouseStart.y, 'circle', {
+                    radius: spawnSize,
+                    vx: dx * 3,
+                    vy: dy * 3
+                });
+                bodies.push(ball);
+                launching = false;
+            }
+
+            if (dragBody) {
+                dragBody = null;
+            }
+
+            mouseDown = false;
+        });
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            spawnSize = Math.max(8, Math.min(80, spawnSize - e.deltaY * 0.05));
+        }, { passive: false });
+
+        function spawnBody(x, y) {
+            let body;
+            if (currentTool === 'ball') {
+                body = new Body(x, y, 'circle', { radius: spawnSize });
+            } else if (currentTool === 'box') {
+                body = new Body(x, y, 'rect', { width: spawnSize * 2, height: spawnSize * 2 });
+            } else if (currentTool === 'plank') {
+                body = new Body(x, y, 'rect', { width: spawnSize * 6, height: spawnSize * 0.66 });
+            }
+            if (body) bodies.push(body);
+        }
+
+        // --- Toolbar ---
+        document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTool = btn.dataset.tool;
+            });
+        });
+
+        document.getElementById('gravityToggle').addEventListener('click', function () {
+            gravityOn = !gravityOn;
+            this.textContent = `Gravity: ${gravityOn ? 'ON' : 'OFF'}`;
+            this.classList.toggle('active', !gravityOn);
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            bodies = [];
+        });
+
+        // --- Game loop ---
+        let lastTime = performance.now();
+        let frameCount = 0;
+        let fpsTime = 0;
+        let fps = 0;
+
+        function gameLoop(timestamp) {
+            const dt = Math.min((timestamp - lastTime) / 1000, 0.033);
+            lastTime = timestamp;
+
+            frameCount++;
+            fpsTime += dt;
+            if (fpsTime >= 1) {
+                fps = frameCount;
+                frameCount = 0;
+                fpsTime = 0;
+            }
+
+            const subDt = dt / SUB_STEPS;
+            for (let step = 0; step < SUB_STEPS; step++) {
+                for (const body of bodies) {
+                    body.update(subDt);
+                }
+                resolveCollisions();
+            }
+
+            drawBackground();
+            for (const body of bodies) {
+                body.draw();
+            }
+            drawSpawnPreview();
+            drawLaunchIndicator();
+
+            document.getElementById('fps').textContent = `FPS: ${fps}`;
+            document.getElementById('objCount').textContent = `Objects: ${bodies.length}`;
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
