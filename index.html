@@ -3,666 +3,713 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Sandbox</title>
+    <title>3D Physics Shooter</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
+        canvas { display: block; }
 
-        body {
-            background: #0a0a1a;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #e0e0e0;
-            overflow: hidden;
-            height: 100vh;
+        #blocker {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 100; cursor: pointer;
         }
-
-        #toolbar {
-            display: flex;
-            gap: 12px;
-            padding: 12px 20px;
-            background: #141428;
-            width: 100%;
-            align-items: center;
-            border-bottom: 2px solid #2a2a4a;
-            flex-wrap: wrap;
-            z-index: 10;
-        }
-
-        #toolbar h1 {
-            font-size: 18px;
-            color: #7b8cff;
-            margin-right: 12px;
-        }
-
-        .tool-btn {
-            padding: 8px 16px;
-            border: 2px solid #3a3a5a;
-            background: #1e1e3a;
-            color: #c0c0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .tool-btn:hover { background: #2a2a5a; border-color: #5a5a8a; }
-        .tool-btn.active { background: #3a3a7a; border-color: #7b8cff; color: #fff; }
-
-        .separator {
-            width: 2px;
-            height: 30px;
-            background: #2a2a4a;
-        }
-
-        #info {
-            margin-left: auto;
-            font-size: 12px;
-            color: #6a6a8a;
-        }
-
-        canvas {
-            display: block;
-            cursor: crosshair;
-        }
+        #blocker h1 { font-size: 48px; color: #ff4444; margin-bottom: 16px; text-shadow: 0 0 20px #ff0000; }
+        #blocker p { color: #ccc; font-size: 18px; margin: 4px 0; }
+        #blocker .key { color: #ffaa00; font-weight: bold; }
+        #blocker .start-hint { margin-top: 30px; color: #888; font-size: 14px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
 
         #hud {
-            position: fixed;
-            bottom: 12px;
-            left: 12px;
-            font-size: 12px;
-            color: #5a5a8a;
-            pointer-events: none;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            display: flex; justify-content: center; align-items: flex-end;
+            padding: 20px; pointer-events: none; z-index: 10;
         }
+        #hud.hidden { display: none; }
+
+        #crosshair {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none; z-index: 10;
+        }
+        #crosshair.hidden { display: none; }
+        #crosshair .dot { width: 4px; height: 4px; background: #fff; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+        #crosshair .line { position: absolute; background: rgba(255,255,255,0.7); }
+        #crosshair .line.top { width: 2px; height: 12px; top: -18px; left: 50%; transform: translateX(-50%); }
+        #crosshair .line.bottom { width: 2px; height: 12px; bottom: -18px; left: 50%; transform: translateX(-50%); }
+        #crosshair .line.left { height: 2px; width: 12px; left: -18px; top: 50%; transform: translateY(-50%); }
+        #crosshair .line.right { height: 2px; width: 12px; right: -18px; top: 50%; transform: translateY(-50%); }
+
+        #weaponBar {
+            display: flex; gap: 8px; background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
+            padding: 8px 16px; backdrop-filter: blur(10px);
+        }
+        .weapon-slot {
+            width: 70px; height: 70px; border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: #aaa;
+            font-size: 10px; text-align: center; transition: all 0.2s;
+        }
+        .weapon-slot.active { border-color: #ff4444; color: #fff; background: rgba(255,68,68,0.2); box-shadow: 0 0 15px rgba(255,68,68,0.3); }
+        .weapon-slot .icon { font-size: 24px; margin-bottom: 2px; }
+        .weapon-slot .key-hint { font-size: 9px; color: #666; margin-top: 2px; }
+
+        #ammoDisplay {
+            position: fixed; bottom: 30px; right: 30px;
+            color: #fff; font-size: 36px; font-weight: bold;
+            pointer-events: none; z-index: 10;
+            text-shadow: 0 0 10px rgba(255,68,68,0.5);
+        }
+        #ammoDisplay.hidden { display: none; }
+        #ammoDisplay span { font-size: 16px; color: #888; }
+
+        #objectCount {
+            position: fixed; top: 15px; left: 15px;
+            color: #aaa; font-size: 13px;
+            pointer-events: none; z-index: 10;
+        }
+        #objectCount.hidden { display: none; }
+
+        #spawnBar {
+            position: fixed; top: 15px; right: 15px;
+            display: flex; gap: 6px;
+            pointer-events: all; z-index: 10;
+        }
+        #spawnBar.hidden { display: none; }
+        .spawn-btn {
+            padding: 6px 14px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.5); color: #ccc; border-radius: 6px;
+            cursor: pointer; font-size: 12px; transition: all 0.2s;
+            backdrop-filter: blur(5px);
+        }
+        .spawn-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+        #hitMarker {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            pointer-events: none; z-index: 15;
+            width: 30px; height: 30px; opacity: 0;
+        }
+        #hitMarker.show { animation: hitPop 0.3s ease-out; }
+        @keyframes hitPop { 0% { transform: translate(-50%,-50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%,-50%) scale(1.5); opacity: 0; } }
+        #hitMarker .hm { position: absolute; background: #fff; }
+        #hitMarker .hm.tl { width: 8px; height: 2px; top: 4px; left: 0; transform: rotate(-45deg); }
+        #hitMarker .hm.tr { width: 8px; height: 2px; top: 4px; right: 0; transform: rotate(45deg); }
+        #hitMarker .hm.bl { width: 8px; height: 2px; bottom: 4px; left: 0; transform: rotate(45deg); }
+        #hitMarker .hm.br { width: 8px; height: 2px; bottom: 4px; right: 0; transform: rotate(-45deg); }
+
+        #muzzleFlash {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 50% 80%, rgba(255,200,50,0.15), transparent 40%);
+            pointer-events: none; z-index: 5; opacity: 0;
+        }
+        #muzzleFlash.flash { animation: mflash 0.08s ease-out; }
+        @keyframes mflash { 0% { opacity: 1; } 100% { opacity: 0; } }
     </style>
 </head>
 <body>
-    <div id="toolbar">
-        <h1>Physics Sandbox</h1>
-        <button class="tool-btn active" data-tool="ball">Ball</button>
-        <button class="tool-btn" data-tool="box">Box</button>
-        <button class="tool-btn" data-tool="plank">Plank</button>
-        <div class="separator"></div>
-        <button class="tool-btn" data-tool="launch">Launch</button>
-        <button class="tool-btn" data-tool="drag">Drag</button>
-        <div class="separator"></div>
-        <button class="tool-btn" id="gravityToggle">Gravity: ON</button>
-        <button class="tool-btn" id="clearBtn">Clear</button>
-        <span id="info">Click to place | Drag to launch | Scroll to resize</span>
+
+<div id="blocker">
+    <h1>3D PHYSICS SHOOTER</h1>
+    <p><span class="key">WASD</span> - Move</p>
+    <p><span class="key">Mouse</span> - Look around</p>
+    <p><span class="key">Left Click</span> - Shoot</p>
+    <p><span class="key">1-4</span> - Switch weapons</p>
+    <p><span class="key">R</span> - Reset scene</p>
+    <p class="start-hint">Click anywhere to start</p>
+</div>
+
+<div id="crosshair" class="hidden">
+    <div class="dot"></div>
+    <div class="line top"></div>
+    <div class="line bottom"></div>
+    <div class="line left"></div>
+    <div class="line right"></div>
+</div>
+
+<div id="hitMarker">
+    <div class="hm tl"></div>
+    <div class="hm tr"></div>
+    <div class="hm bl"></div>
+    <div class="hm br"></div>
+</div>
+
+<div id="muzzleFlash"></div>
+
+<div id="hud" class="hidden">
+    <div id="weaponBar">
+        <div class="weapon-slot active" data-weapon="0">
+            <div class="icon">&#9679;</div>
+            <div>Cannon</div>
+            <div class="key-hint">1</div>
+        </div>
+        <div class="weapon-slot" data-weapon="1">
+            <div class="icon">&#9632;</div>
+            <div>Shotgun</div>
+            <div class="key-hint">2</div>
+        </div>
+        <div class="weapon-slot" data-weapon="2">
+            <div class="icon">&#10038;</div>
+            <div>Explosive</div>
+            <div class="key-hint">3</div>
+        </div>
+        <div class="weapon-slot" data-weapon="3">
+            <div class="icon">&#9650;</div>
+            <div>Sniper</div>
+            <div class="key-hint">4</div>
+        </div>
     </div>
-    <canvas id="canvas"></canvas>
-    <div id="hud">
-        <div id="fps">FPS: 0</div>
-        <div id="objCount">Objects: 0</div>
-    </div>
+</div>
 
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+<div id="ammoDisplay" class="hidden"><span>AMMO</span><br>&#8734;</div>
 
-        function resize() {
-            const toolbar = document.getElementById('toolbar');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - toolbar.offsetHeight;
-            canvas.style.marginTop = '0';
+<div id="objectCount" class="hidden">Objects: 0</div>
+
+<div id="spawnBar" class="hidden">
+    <button class="spawn-btn" onclick="spawnTower()">Tower</button>
+    <button class="spawn-btn" onclick="spawnWall()">Wall</button>
+    <button class="spawn-btn" onclick="spawnPyramid()">Pyramid</button>
+    <button class="spawn-btn" onclick="spawnStack()">Stack</button>
+    <button class="spawn-btn" onclick="clearDynamic()">Clear</button>
+</div>
+
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.171.0/examples/jsm/",
+        "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
+    }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import * as CANNON from 'cannon-es';
+
+// --- Scene setup ---
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a1a2e);
+scene.fog = new THREE.FogExp2(0x1a1a2e, 0.008);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 5, 25);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+document.body.appendChild(renderer.domElement);
+
+// --- Physics world ---
+const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -20, 0) });
+world.broadphase = new CANNON.SAPBroadphase(world);
+world.allowSleep = true;
+world.solver.iterations = 10;
+
+const defaultMaterial = new CANNON.Material('default');
+world.defaultContactMaterial = new CANNON.ContactMaterial(defaultMaterial, defaultMaterial, {
+    friction: 0.4,
+    restitution: 0.3
+});
+
+// --- Lighting ---
+const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
+scene.add(ambientLight);
+
+const dirLight = new THREE.DirectionalLight(0xffeedd, 1.5);
+dirLight.position.set(30, 50, 20);
+dirLight.castShadow = true;
+dirLight.shadow.mapSize.set(2048, 2048);
+dirLight.shadow.camera.left = -60;
+dirLight.shadow.camera.right = 60;
+dirLight.shadow.camera.top = 60;
+dirLight.shadow.camera.bottom = -60;
+dirLight.shadow.camera.near = 0.5;
+dirLight.shadow.camera.far = 150;
+scene.add(dirLight);
+
+const fillLight = new THREE.DirectionalLight(0x4466aa, 0.4);
+fillLight.position.set(-20, 20, -10);
+scene.add(fillLight);
+
+const pointLight = new THREE.PointLight(0xff4400, 0.5, 50);
+pointLight.position.set(0, 10, 0);
+scene.add(pointLight);
+
+// --- Ground ---
+const groundGeo = new THREE.PlaneGeometry(200, 200);
+const groundMat = new THREE.MeshStandardMaterial({
+    color: 0x2a2a3e,
+    roughness: 0.8,
+    metalness: 0.2,
+});
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const gridHelper = new THREE.GridHelper(200, 50, 0x3a3a5a, 0x2a2a4a);
+gridHelper.position.y = 0.01;
+scene.add(gridHelper);
+
+const groundBody = new CANNON.Body({
+    type: CANNON.Body.STATIC,
+    shape: new CANNON.Plane(),
+    material: defaultMaterial
+});
+groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+world.addBody(groundBody);
+
+// invisible walls
+for (const [px, pz, rx, rz] of [[0, -100, 0, 0], [0, 100, 0, Math.PI], [-100, 0, 0, Math.PI/2], [100, 0, 0, -Math.PI/2]]) {
+    const wall = new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Plane(), material: defaultMaterial });
+    wall.position.set(px, 0, pz);
+    wall.quaternion.setFromEuler(0, rz, rx);
+    world.addBody(wall);
+}
+
+// --- Tracked objects ---
+const physicsObjects = [];
+
+const boxColors = [0xff6b6b, 0xffd93d, 0x6bcb77, 0x4d96ff, 0xff8cc8, 0xa66cff, 0xff922b, 0x20c997, 0x748ffc, 0xe599f7];
+
+function createBox(x, y, z, w, h, d, color, mass = 1) {
+    const geo = new THREE.BoxGeometry(w, h, d);
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.3 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+
+    const body = new CANNON.Body({
+        mass,
+        shape: new CANNON.Box(new CANNON.Vec3(w/2, h/2, d/2)),
+        position: new CANNON.Vec3(x, y, z),
+        material: defaultMaterial
+    });
+    body.linearDamping = 0.1;
+    body.angularDamping = 0.3;
+    world.addBody(body);
+
+    physicsObjects.push({ mesh, body, type: 'dynamic' });
+    return { mesh, body };
+}
+
+function createSphere(x, y, z, r, color, mass = 2) {
+    const geo = new THREE.SphereGeometry(r, 16, 16);
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.5 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.castShadow = true;
+    scene.add(mesh);
+
+    const body = new CANNON.Body({
+        mass,
+        shape: new CANNON.Sphere(r),
+        position: new CANNON.Vec3(x, y, z),
+        material: defaultMaterial
+    });
+    body.linearDamping = 0.1;
+    body.angularDamping = 0.3;
+    world.addBody(body);
+
+    physicsObjects.push({ mesh, body, type: 'dynamic' });
+    return { mesh, body };
+}
+
+// --- Scene builders ---
+function clearDynamic() {
+    for (let i = physicsObjects.length - 1; i >= 0; i--) {
+        const obj = physicsObjects[i];
+        if (obj.type === 'dynamic') {
+            scene.remove(obj.mesh);
+            world.removeBody(obj.body);
+            obj.mesh.geometry.dispose();
+            obj.mesh.material.dispose();
+            physicsObjects.splice(i, 1);
         }
-        window.addEventListener('resize', resize);
-        resize();
+    }
+}
+window.clearDynamic = clearDynamic;
 
-        // --- Physics constants ---
-        const GRAVITY = 980;
-        const DAMPING = 0.999;
-        const RESTITUTION = 0.6;
-        const FRICTION = 0.3;
-        const SUB_STEPS = 4;
-
-        // --- State ---
-        let bodies = [];
-        let currentTool = 'ball';
-        let gravityOn = true;
-        let spawnSize = 25;
-        let dragBody = null;
-        let dragOffset = { x: 0, y: 0 };
-        let mouseDown = false;
-        let mouseStart = { x: 0, y: 0 };
-        let mousePos = { x: 0, y: 0 };
-        let launching = false;
-
-        // --- Body class ---
-        class Body {
-            constructor(x, y, type, opts = {}) {
-                this.x = x;
-                this.y = y;
-                this.vx = opts.vx || 0;
-                this.vy = opts.vy || 0;
-                this.type = type;
-                this.isStatic = opts.isStatic || false;
-                this.restitution = opts.restitution || RESTITUTION;
-
-                if (type === 'circle') {
-                    this.radius = opts.radius || 20;
-                    this.mass = Math.PI * this.radius * this.radius * 0.01;
-                    this.color = opts.color || this.randomColor();
-                } else {
-                    this.width = opts.width || 40;
-                    this.height = opts.height || 40;
-                    this.mass = this.width * this.height * 0.01;
-                    this.color = opts.color || this.randomColor();
-                    this.angle = opts.angle || 0;
-                    this.angularVel = 0;
-                }
-
-                if (this.isStatic) this.mass = Infinity;
-                this.inverseMass = this.isStatic ? 0 : 1 / this.mass;
-            }
-
-            randomColor() {
-                const colors = [
-                    '#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff',
-                    '#ff8cc8', '#a66cff', '#ff922b', '#20c997',
-                    '#748ffc', '#e599f7', '#ffa94d', '#69db7c'
-                ];
-                return colors[Math.floor(Math.random() * colors.length)];
-            }
-
-            update(dt) {
-                if (this.isStatic) return;
-
-                if (gravityOn) {
-                    this.vy += GRAVITY * dt;
-                }
-
-                this.vx *= DAMPING;
-                this.vy *= DAMPING;
-
-                this.x += this.vx * dt;
-                this.y += this.vy * dt;
-
-                if (this.type === 'rect' && this.angularVel) {
-                    this.angle += this.angularVel * dt;
-                    this.angularVel *= 0.98;
-                }
-
-                this.constrainToBounds();
-            }
-
-            constrainToBounds() {
-                if (this.type === 'circle') {
-                    if (this.x - this.radius < 0) {
-                        this.x = this.radius;
-                        this.vx = Math.abs(this.vx) * this.restitution;
-                    }
-                    if (this.x + this.radius > canvas.width) {
-                        this.x = canvas.width - this.radius;
-                        this.vx = -Math.abs(this.vx) * this.restitution;
-                    }
-                    if (this.y + this.radius > canvas.height) {
-                        this.y = canvas.height - this.radius;
-                        this.vy = -Math.abs(this.vy) * this.restitution;
-                        this.vx *= (1 - FRICTION);
-                    }
-                    if (this.y - this.radius < 0) {
-                        this.y = this.radius;
-                        this.vy = Math.abs(this.vy) * this.restitution;
-                    }
-                } else {
-                    const halfW = this.width / 2;
-                    const halfH = this.height / 2;
-                    if (this.y + halfH > canvas.height) {
-                        this.y = canvas.height - halfH;
-                        this.vy = -Math.abs(this.vy) * this.restitution;
-                        this.vx *= (1 - FRICTION);
-                        this.angularVel *= 0.9;
-                    }
-                    if (this.y - halfH < 0) {
-                        this.y = halfH;
-                        this.vy = Math.abs(this.vy) * this.restitution;
-                    }
-                    if (this.x - halfW < 0) {
-                        this.x = halfW;
-                        this.vx = Math.abs(this.vx) * this.restitution;
-                    }
-                    if (this.x + halfW > canvas.width) {
-                        this.x = canvas.width - halfW;
-                        this.vx = -Math.abs(this.vx) * this.restitution;
-                    }
-                }
-            }
-
-            draw() {
-                ctx.save();
-                if (this.type === 'circle') {
-                    const gradient = ctx.createRadialGradient(
-                        this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.1,
-                        this.x, this.y, this.radius
-                    );
-                    gradient.addColorStop(0, this.lighten(this.color, 40));
-                    gradient.addColorStop(1, this.color);
-
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = gradient;
-                    ctx.fill();
-                    ctx.strokeStyle = this.darken(this.color, 30);
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-
-                    ctx.beginPath();
-                    ctx.arc(this.x - this.radius * 0.25, this.y - this.radius * 0.25, this.radius * 0.15, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                    ctx.fill();
-                } else {
-                    ctx.translate(this.x, this.y);
-                    ctx.rotate(this.angle || 0);
-                    ctx.fillStyle = this.color;
-                    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-                    ctx.strokeStyle = this.darken(this.color, 30);
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
-
-                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
-                    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height / 3);
-                }
-                ctx.restore();
-            }
-
-            lighten(hex, percent) {
-                const num = parseInt(hex.slice(1), 16);
-                const r = Math.min(255, (num >> 16) + percent);
-                const g = Math.min(255, ((num >> 8) & 0x00FF) + percent);
-                const b = Math.min(255, (num & 0x0000FF) + percent);
-                return `rgb(${r},${g},${b})`;
-            }
-
-            darken(hex, percent) {
-                const num = parseInt(hex.slice(1), 16);
-                const r = Math.max(0, (num >> 16) - percent);
-                const g = Math.max(0, ((num >> 8) & 0x00FF) - percent);
-                const b = Math.max(0, (num & 0x0000FF) - percent);
-                return `rgb(${r},${g},${b})`;
-            }
-
-            containsPoint(px, py) {
-                if (this.type === 'circle') {
-                    const dx = px - this.x;
-                    const dy = py - this.y;
-                    return dx * dx + dy * dy <= this.radius * this.radius;
-                } else {
-                    return px >= this.x - this.width / 2 && px <= this.x + this.width / 2 &&
-                           py >= this.y - this.height / 2 && py <= this.y + this.height / 2;
-                }
-            }
+function spawnTower() {
+    const bx = (Math.random() - 0.5) * 20;
+    const bz = (Math.random() - 0.5) * 20 - 10;
+    for (let row = 0; row < 8; row++) {
+        const c = boxColors[row % boxColors.length];
+        if (row % 2 === 0) {
+            createBox(bx - 0.6, row * 1.05 + 0.525, bz, 1, 1, 2.5, c);
+            createBox(bx + 0.6, row * 1.05 + 0.525, bz, 1, 1, 2.5, c);
+        } else {
+            createBox(bx, row * 1.05 + 0.525, bz - 0.6, 2.5, 1, 1, c);
+            createBox(bx, row * 1.05 + 0.525, bz + 0.6, 2.5, 1, 1, c);
         }
+    }
+}
+window.spawnTower = spawnTower;
 
-        // --- Collision detection & resolution ---
-        function resolveCollisions() {
-            for (let i = 0; i < bodies.length; i++) {
-                for (let j = i + 1; j < bodies.length; j++) {
-                    const a = bodies[i];
-                    const b = bodies[j];
-
-                    if (a.isStatic && b.isStatic) continue;
-
-                    if (a.type === 'circle' && b.type === 'circle') {
-                        circleVsCircle(a, b);
-                    } else if (a.type === 'circle' && b.type === 'rect') {
-                        circleVsRect(a, b);
-                    } else if (a.type === 'rect' && b.type === 'circle') {
-                        circleVsRect(b, a);
-                    } else {
-                        rectVsRect(a, b);
-                    }
-                }
-            }
+function spawnWall() {
+    const bx = (Math.random() - 0.5) * 20;
+    const bz = (Math.random() - 0.5) * 10 - 15;
+    const cols = 8, rows = 6;
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            const offset = (r % 2) * 0.6;
+            const color = boxColors[(r + c) % boxColors.length];
+            createBox(bx + (c - cols/2) * 1.2 + offset, r * 1.05 + 0.525, bz, 1.1, 1, 1.1, color);
         }
+    }
+}
+window.spawnWall = spawnWall;
 
-        function circleVsCircle(a, b) {
-            const dx = b.x - a.x;
-            const dy = b.y - a.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const minDist = a.radius + b.radius;
-
-            if (dist >= minDist || dist === 0) return;
-
-            const nx = dx / dist;
-            const ny = dy / dist;
-            const overlap = minDist - dist;
-
-            const totalInvMass = a.inverseMass + b.inverseMass;
-            if (totalInvMass === 0) return;
-
-            a.x -= nx * overlap * (a.inverseMass / totalInvMass);
-            a.y -= ny * overlap * (a.inverseMass / totalInvMass);
-            b.x += nx * overlap * (b.inverseMass / totalInvMass);
-            b.y += ny * overlap * (b.inverseMass / totalInvMass);
-
-            const dvx = a.vx - b.vx;
-            const dvy = a.vy - b.vy;
-            const relVelDotN = dvx * nx + dvy * ny;
-
-            if (relVelDotN > 0) return;
-
-            const e = Math.min(a.restitution, b.restitution);
-            const impulse = -(1 + e) * relVelDotN / totalInvMass;
-
-            a.vx += impulse * a.inverseMass * nx;
-            a.vy += impulse * a.inverseMass * ny;
-            b.vx -= impulse * b.inverseMass * nx;
-            b.vy -= impulse * b.inverseMass * ny;
+function spawnPyramid() {
+    const bx = (Math.random() - 0.5) * 20;
+    const bz = (Math.random() - 0.5) * 10 - 10;
+    const base = 6;
+    for (let row = 0; row < base; row++) {
+        const count = base - row;
+        for (let i = 0; i < count; i++) {
+            const color = boxColors[(row + i) % boxColors.length];
+            createBox(
+                bx + (i - (count - 1) / 2) * 1.15,
+                row * 1.05 + 0.525,
+                bz,
+                1.1, 1, 1.1, color
+            );
         }
+    }
+}
+window.spawnPyramid = spawnPyramid;
 
-        function circleVsRect(circle, rect) {
-            const cos = Math.cos(-rect.angle || 0);
-            const sin = Math.sin(-rect.angle || 0);
+function spawnStack() {
+    const bx = (Math.random() - 0.5) * 20;
+    const bz = (Math.random() - 0.5) * 10 - 10;
+    for (let i = 0; i < 10; i++) {
+        const color = boxColors[i % boxColors.length];
+        createSphere(bx + (Math.random()-0.5)*0.3, i * 1.2 + 0.6, bz + (Math.random()-0.5)*0.3, 0.5, color);
+    }
+}
+window.spawnStack = spawnStack;
 
-            let localX = circle.x - rect.x;
-            let localY = circle.y - rect.y;
-            const rotX = localX * cos - localY * sin;
-            const rotY = localX * sin + localY * cos;
+function buildInitialScene() {
+    spawnTower();
+    spawnWall();
+    spawnPyramid();
+}
 
-            const halfW = rect.width / 2;
-            const halfH = rect.height / 2;
+buildInitialScene();
 
-            const closestX = Math.max(-halfW, Math.min(rotX, halfW));
-            const closestY = Math.max(-halfH, Math.min(rotY, halfH));
+// --- FPS Controls ---
+let locked = false;
+const velocity = new THREE.Vector3();
+const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+const keys = {};
+let pitch = 0, yaw = 0;
 
-            const dx = rotX - closestX;
-            const dy = rotY - closestY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+document.getElementById('blocker').addEventListener('click', () => {
+    renderer.domElement.requestPointerLock();
+});
 
-            if (dist >= circle.radius || dist === 0) return;
+document.addEventListener('pointerlockchange', () => {
+    locked = !!document.pointerLockElement;
+    document.getElementById('blocker').style.display = locked ? 'none' : 'flex';
+    document.getElementById('hud').classList.toggle('hidden', !locked);
+    document.getElementById('crosshair').classList.toggle('hidden', !locked);
+    document.getElementById('ammoDisplay').classList.toggle('hidden', !locked);
+    document.getElementById('objectCount').classList.toggle('hidden', !locked);
+    document.getElementById('spawnBar').classList.toggle('hidden', !locked);
+});
 
-            const cosBack = Math.cos(rect.angle || 0);
-            const sinBack = Math.sin(rect.angle || 0);
+document.addEventListener('mousemove', (e) => {
+    if (!locked) return;
+    yaw -= e.movementX * 0.002;
+    pitch -= e.movementY * 0.002;
+    pitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, pitch));
+    euler.set(pitch, yaw, 0);
+    camera.quaternion.setFromEuler(euler);
+});
 
-            let nx = dx / dist;
-            let ny = dy / dist;
-            const worldNx = nx * cosBack - ny * sinBack;
-            const worldNy = nx * sinBack + ny * cosBack;
+document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-            const overlap = circle.radius - dist;
-            const totalInvMass = circle.inverseMass + rect.inverseMass;
-            if (totalInvMass === 0) return;
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Digit1') selectWeapon(0);
+    if (e.code === 'Digit2') selectWeapon(1);
+    if (e.code === 'Digit3') selectWeapon(2);
+    if (e.code === 'Digit4') selectWeapon(3);
+    if (e.code === 'KeyR') {
+        clearDynamic();
+        buildInitialScene();
+    }
+});
 
-            circle.x += worldNx * overlap * (circle.inverseMass / totalInvMass);
-            circle.y += worldNy * overlap * (circle.inverseMass / totalInvMass);
-            rect.x -= worldNx * overlap * (rect.inverseMass / totalInvMass);
-            rect.y -= worldNy * overlap * (rect.inverseMass / totalInvMass);
+function updateMovement(dt) {
+    if (!locked) return;
+    const speed = 30;
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+    dir.y = 0;
+    dir.normalize();
+    const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
 
-            const dvx = circle.vx - rect.vx;
-            const dvy = circle.vy - rect.vy;
-            const relVelDotN = dvx * worldNx + dvy * worldNy;
+    velocity.set(0, 0, 0);
+    if (keys['KeyW']) velocity.add(dir);
+    if (keys['KeyS']) velocity.sub(dir);
+    if (keys['KeyD']) velocity.add(right);
+    if (keys['KeyA']) velocity.sub(right);
 
-            if (relVelDotN > 0) return;
+    if (velocity.length() > 0) {
+        velocity.normalize().multiplyScalar(speed * dt);
+        camera.position.add(velocity);
+    }
+    camera.position.y = 5;
+}
 
-            const e = Math.min(circle.restitution, rect.restitution);
-            const impulse = -(1 + e) * relVelDotN / totalInvMass;
+// --- Weapons ---
+const weapons = [
+    { name: 'Cannon', speed: 80, size: 0.5, mass: 8, color: 0xff4444, count: 1, spread: 0, explosive: false, cooldown: 0.3 },
+    { name: 'Shotgun', speed: 60, size: 0.2, mass: 1, color: 0xffaa00, count: 8, spread: 0.08, explosive: false, cooldown: 0.6 },
+    { name: 'Explosive', speed: 50, size: 0.4, mass: 5, color: 0xff2200, count: 1, spread: 0, explosive: true, cooldown: 0.8 },
+    { name: 'Sniper', speed: 200, size: 0.15, mass: 15, color: 0x44aaff, count: 1, spread: 0, explosive: false, cooldown: 0.2 },
+];
 
-            circle.vx += impulse * circle.inverseMass * worldNx;
-            circle.vy += impulse * circle.inverseMass * worldNy;
-            rect.vx -= impulse * rect.inverseMass * worldNx;
-            rect.vy -= impulse * rect.inverseMass * worldNy;
+let currentWeapon = 0;
+let lastShotTime = 0;
 
-            if (rect.type === 'rect') {
-                const contactX = closestX;
-                const torque = contactX * worldNy - closestY * worldNx;
-                rect.angularVel += torque * impulse * 0.0001;
-            }
-        }
+function selectWeapon(idx) {
+    currentWeapon = idx;
+    document.querySelectorAll('.weapon-slot').forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+    });
+}
 
-        function rectVsRect(a, b) {
-            const overlapX = (a.width / 2 + b.width / 2) - Math.abs(a.x - b.x);
-            const overlapY = (a.height / 2 + b.height / 2) - Math.abs(a.y - b.y);
+// --- Shooting ---
+const projectiles = [];
+const explosionParticles = [];
 
-            if (overlapX <= 0 || overlapY <= 0) return;
+function shoot() {
+    const now = performance.now() / 1000;
+    const wp = weapons[currentWeapon];
+    if (now - lastShotTime < wp.cooldown) return;
+    lastShotTime = now;
 
-            const totalInvMass = a.inverseMass + b.inverseMass;
-            if (totalInvMass === 0) return;
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
 
-            let nx, ny, overlap;
-            if (overlapX < overlapY) {
-                nx = a.x < b.x ? -1 : 1;
-                ny = 0;
-                overlap = overlapX;
-            } else {
-                nx = 0;
-                ny = a.y < b.y ? -1 : 1;
-                overlap = overlapY;
-            }
-
-            a.x += nx * overlap * (a.inverseMass / totalInvMass);
-            a.y += ny * overlap * (a.inverseMass / totalInvMass);
-            b.x -= nx * overlap * (b.inverseMass / totalInvMass);
-            b.y -= ny * overlap * (b.inverseMass / totalInvMass);
-
-            const dvx = a.vx - b.vx;
-            const dvy = a.vy - b.vy;
-            const relVelDotN = dvx * nx + dvy * ny;
-
-            if (relVelDotN > 0) return;
-
-            const e = Math.min(a.restitution, b.restitution);
-            const impulse = -(1 + e) * relVelDotN / totalInvMass;
-
-            a.vx += impulse * a.inverseMass * nx;
-            a.vy += impulse * a.inverseMass * ny;
-            b.vx -= impulse * b.inverseMass * nx;
-            b.vy -= impulse * b.inverseMass * ny;
+    for (let i = 0; i < wp.count; i++) {
+        const d = dir.clone();
+        if (wp.spread > 0) {
+            d.x += (Math.random() - 0.5) * wp.spread;
+            d.y += (Math.random() - 0.5) * wp.spread;
+            d.z += (Math.random() - 0.5) * wp.spread;
+            d.normalize();
         }
 
-        // --- Rendering ---
-        function drawBackground() {
-            ctx.fillStyle = '#0a0a1a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const startPos = camera.position.clone().add(d.clone().multiplyScalar(1.5));
+        const obj = createSphere(startPos.x, startPos.y, startPos.z, wp.size, wp.color, wp.mass);
 
-            ctx.strokeStyle = '#151530';
-            ctx.lineWidth = 1;
-            const gridSize = 40;
-            for (let x = 0; x < canvas.width; x += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
-            for (let y = 0; y < canvas.height; y += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
+        obj.body.velocity.set(d.x * wp.speed, d.y * wp.speed, d.z * wp.speed);
+        obj.body.collisionResponse = true;
 
-            ctx.fillStyle = '#1a1a3a';
-            ctx.fillRect(0, canvas.height - 3, canvas.width, 3);
-        }
-
-        function drawLaunchIndicator() {
-            if (!launching || currentTool !== 'launch') return;
-
-            const dx = mouseStart.x - mousePos.x;
-            const dy = mouseStart.y - mousePos.y;
-
-            ctx.beginPath();
-            ctx.moveTo(mouseStart.x, mouseStart.y);
-            ctx.lineTo(mousePos.x, mousePos.y);
-            ctx.strokeStyle = 'rgba(255, 100, 100, 0.6)';
-            ctx.lineWidth = 3;
-            ctx.setLineDash([8, 4]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            const angle = Math.atan2(dy, dx);
-            const arrowLen = 12;
-            ctx.beginPath();
-            ctx.moveTo(mouseStart.x, mouseStart.y);
-            ctx.lineTo(mouseStart.x - arrowLen * Math.cos(angle - 0.4), mouseStart.y - arrowLen * Math.sin(angle - 0.4));
-            ctx.moveTo(mouseStart.x, mouseStart.y);
-            ctx.lineTo(mouseStart.x - arrowLen * Math.cos(angle + 0.4), mouseStart.y - arrowLen * Math.sin(angle + 0.4));
-            ctx.strokeStyle = 'rgba(255, 100, 100, 0.8)';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-
-            const power = Math.sqrt(dx * dx + dy * dy);
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.font = '12px monospace';
-            ctx.fillText(`Power: ${Math.round(power)}`, mouseStart.x + 10, mouseStart.y - 10);
-        }
-
-        function drawSpawnPreview() {
-            if (launching || currentTool === 'drag' || currentTool === 'launch') return;
-
-            ctx.save();
-            ctx.globalAlpha = 0.3;
-
-            if (currentTool === 'ball') {
-                ctx.beginPath();
-                ctx.arc(mousePos.x, mousePos.y, spawnSize, 0, Math.PI * 2);
-                ctx.fillStyle = '#7b8cff';
-                ctx.fill();
-            } else if (currentTool === 'box') {
-                ctx.fillStyle = '#7b8cff';
-                ctx.fillRect(mousePos.x - spawnSize, mousePos.y - spawnSize, spawnSize * 2, spawnSize * 2);
-            } else if (currentTool === 'plank') {
-                ctx.fillStyle = '#7b8cff';
-                ctx.fillRect(mousePos.x - spawnSize * 3, mousePos.y - spawnSize / 3, spawnSize * 6, spawnSize * 0.66);
-            }
-
-            ctx.restore();
-        }
-
-        // --- Input ---
-        const toolbarEl = document.getElementById('toolbar');
-        const toolbarHeight = () => toolbarEl.offsetHeight;
-
-        canvas.addEventListener('mousedown', (e) => {
-            const x = e.offsetX;
-            const y = e.offsetY;
-            mouseDown = true;
-            mouseStart = { x, y };
-            mousePos = { x, y };
-
-            if (currentTool === 'drag') {
-                for (let i = bodies.length - 1; i >= 0; i--) {
-                    if (bodies[i].containsPoint(x, y)) {
-                        dragBody = bodies[i];
-                        dragOffset = { x: x - dragBody.x, y: y - dragBody.y };
-                        break;
+        if (wp.explosive) {
+            obj.body.addEventListener('collide', (e) => {
+                explode(obj.body.position, 12, 60);
+                setTimeout(() => {
+                    const idx = physicsObjects.indexOf(obj);
+                    if (idx !== -1) {
+                        scene.remove(obj.mesh);
+                        world.removeBody(obj.body);
+                        obj.mesh.geometry.dispose();
+                        obj.mesh.material.dispose();
+                        physicsObjects.splice(idx, 1);
                     }
-                }
-            } else if (currentTool === 'launch') {
-                launching = true;
-            } else {
-                spawnBody(x, y);
-            }
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            mousePos = { x: e.offsetX, y: e.offsetY };
-
-            if (dragBody) {
-                dragBody.vx = (mousePos.x - dragOffset.x - dragBody.x) * 10;
-                dragBody.vy = (mousePos.y - dragOffset.y - dragBody.y) * 10;
-                dragBody.x = mousePos.x - dragOffset.x;
-                dragBody.y = mousePos.y - dragOffset.y;
-            }
-        });
-
-        canvas.addEventListener('mouseup', (e) => {
-            if (launching && currentTool === 'launch') {
-                const dx = mouseStart.x - mousePos.x;
-                const dy = mouseStart.y - mousePos.y;
-                const ball = new Body(mouseStart.x, mouseStart.y, 'circle', {
-                    radius: spawnSize,
-                    vx: dx * 3,
-                    vy: dy * 3
-                });
-                bodies.push(ball);
-                launching = false;
-            }
-
-            if (dragBody) {
-                dragBody = null;
-            }
-
-            mouseDown = false;
-        });
-
-        canvas.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            spawnSize = Math.max(8, Math.min(80, spawnSize - e.deltaY * 0.05));
-        }, { passive: false });
-
-        function spawnBody(x, y) {
-            let body;
-            if (currentTool === 'ball') {
-                body = new Body(x, y, 'circle', { radius: spawnSize });
-            } else if (currentTool === 'box') {
-                body = new Body(x, y, 'rect', { width: spawnSize * 2, height: spawnSize * 2 });
-            } else if (currentTool === 'plank') {
-                body = new Body(x, y, 'rect', { width: spawnSize * 6, height: spawnSize * 0.66 });
-            }
-            if (body) bodies.push(body);
-        }
-
-        // --- Toolbar ---
-        document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentTool = btn.dataset.tool;
+                }, 0);
             });
-        });
-
-        document.getElementById('gravityToggle').addEventListener('click', function () {
-            gravityOn = !gravityOn;
-            this.textContent = `Gravity: ${gravityOn ? 'ON' : 'OFF'}`;
-            this.classList.toggle('active', !gravityOn);
-        });
-
-        document.getElementById('clearBtn').addEventListener('click', () => {
-            bodies = [];
-        });
-
-        // --- Game loop ---
-        let lastTime = performance.now();
-        let frameCount = 0;
-        let fpsTime = 0;
-        let fps = 0;
-
-        function gameLoop(timestamp) {
-            const dt = Math.min((timestamp - lastTime) / 1000, 0.033);
-            lastTime = timestamp;
-
-            frameCount++;
-            fpsTime += dt;
-            if (fpsTime >= 1) {
-                fps = frameCount;
-                frameCount = 0;
-                fpsTime = 0;
-            }
-
-            const subDt = dt / SUB_STEPS;
-            for (let step = 0; step < SUB_STEPS; step++) {
-                for (const body of bodies) {
-                    body.update(subDt);
-                }
-                resolveCollisions();
-            }
-
-            drawBackground();
-            for (const body of bodies) {
-                body.draw();
-            }
-            drawSpawnPreview();
-            drawLaunchIndicator();
-
-            document.getElementById('fps').textContent = `FPS: ${fps}`;
-            document.getElementById('objCount').textContent = `Objects: ${bodies.length}`;
-
-            requestAnimationFrame(gameLoop);
         }
 
-        requestAnimationFrame(gameLoop);
-    </script>
+        obj.body.addEventListener('collide', () => showHitMarker());
+
+        projectiles.push({ obj, time: now });
+    }
+
+    // muzzle flash
+    const mf = document.getElementById('muzzleFlash');
+    mf.classList.remove('flash');
+    void mf.offsetWidth;
+    mf.classList.add('flash');
+}
+
+function showHitMarker() {
+    const hm = document.getElementById('hitMarker');
+    hm.classList.remove('show');
+    void hm.offsetWidth;
+    hm.classList.add('show');
+}
+
+function explode(position, radius, force) {
+    for (const obj of physicsObjects) {
+        if (obj.body.type === CANNON.Body.STATIC) continue;
+        const dx = obj.body.position.x - position.x;
+        const dy = obj.body.position.y - position.y;
+        const dz = obj.body.position.z - position.z;
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (dist < radius && dist > 0.01) {
+            const strength = force * (1 - dist / radius);
+            const impulse = new CANNON.Vec3(
+                (dx / dist) * strength,
+                (dy / dist) * strength + strength * 0.5,
+                (dz / dist) * strength
+            );
+            obj.body.applyImpulse(impulse);
+            obj.body.wakeUp();
+        }
+    }
+
+    // visual explosion
+    for (let i = 0; i < 30; i++) {
+        const geo = new THREE.SphereGeometry(0.1 + Math.random() * 0.2, 6, 6);
+        const mat = new THREE.MeshBasicMaterial({
+            color: new THREE.Color().setHSL(0.05 + Math.random() * 0.08, 1, 0.5 + Math.random() * 0.3)
+        });
+        const particle = new THREE.Mesh(geo, mat);
+        particle.position.set(position.x, position.y, position.z);
+        scene.add(particle);
+
+        explosionParticles.push({
+            mesh: particle,
+            velocity: new THREE.Vector3(
+                (Math.random() - 0.5) * 20,
+                Math.random() * 15,
+                (Math.random() - 0.5) * 20
+            ),
+            life: 1.0
+        });
+    }
+
+    // explosion light flash
+    const light = new THREE.PointLight(0xff4400, 5, 20);
+    light.position.set(position.x, position.y, position.z);
+    scene.add(light);
+    setTimeout(() => scene.remove(light), 200);
+}
+
+document.addEventListener('mousedown', (e) => {
+    if (!locked || e.button !== 0) return;
+    shoot();
+});
+
+// --- Cleanup old projectiles ---
+function cleanupProjectiles(now) {
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        if (now - projectiles[i].time > 8) {
+            const obj = projectiles[i].obj;
+            const idx = physicsObjects.indexOf(obj);
+            if (idx !== -1) {
+                scene.remove(obj.mesh);
+                world.removeBody(obj.body);
+                obj.mesh.geometry.dispose();
+                obj.mesh.material.dispose();
+                physicsObjects.splice(idx, 1);
+            }
+            projectiles.splice(i, 1);
+        }
+    }
+}
+
+// --- Update explosion particles ---
+function updateParticles(dt) {
+    for (let i = explosionParticles.length - 1; i >= 0; i--) {
+        const p = explosionParticles[i];
+        p.velocity.y -= 15 * dt;
+        p.mesh.position.add(p.velocity.clone().multiplyScalar(dt));
+        p.life -= dt * 2;
+        p.mesh.material.opacity = Math.max(0, p.life);
+        p.mesh.material.transparent = true;
+        p.mesh.scale.setScalar(p.life);
+
+        if (p.life <= 0) {
+            scene.remove(p.mesh);
+            p.mesh.geometry.dispose();
+            p.mesh.material.dispose();
+            explosionParticles.splice(i, 1);
+        }
+    }
+}
+
+// --- Skybox via hemisphere ---
+const skyGeo = new THREE.SphereGeometry(400, 32, 32);
+const skyMat = new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    uniforms: {
+        topColor: { value: new THREE.Color(0x0a0a2e) },
+        bottomColor: { value: new THREE.Color(0x1a1a3e) },
+        offset: { value: 20 },
+        exponent: { value: 0.4 }
+    },
+    vertexShader: `
+        varying vec3 vWorldPosition;
+        void main() {
+            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPosition.xyz;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform vec3 topColor;
+        uniform vec3 bottomColor;
+        uniform float offset;
+        uniform float exponent;
+        varying vec3 vWorldPosition;
+        void main() {
+            float h = normalize(vWorldPosition + offset).y;
+            gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
+        }
+    `
+});
+scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+// --- Game loop ---
+const clock = new THREE.Clock();
+let frameCount = 0;
+
+function animate() {
+    requestAnimationFrame(animate);
+    const dt = Math.min(clock.getDelta(), 0.05);
+    const now = performance.now() / 1000;
+
+    updateMovement(dt);
+    world.step(1/60, dt, 3);
+
+    for (const obj of physicsObjects) {
+        obj.mesh.position.copy(obj.body.position);
+        obj.mesh.quaternion.copy(obj.body.quaternion);
+    }
+
+    cleanupProjectiles(now);
+    updateParticles(dt);
+
+    frameCount++;
+    if (frameCount % 10 === 0) {
+        const dynCount = physicsObjects.filter(o => o.type === 'dynamic').length;
+        document.getElementById('objectCount').textContent = `Objects: ${dynCount}`;
+    }
+
+    renderer.render(scene, camera);
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
 </body>
 </html>
