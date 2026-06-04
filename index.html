@@ -11,31 +11,23 @@
 
         #blocker {
             position: fixed; inset: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.92);
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             z-index: 100; cursor: pointer;
         }
         #blocker h1 { font-size: 48px; color: #ff4444; margin-bottom: 20px; text-shadow: 0 0 20px #ff0000; }
-        #blocker .section { margin: 10px 0; }
-        #blocker .section-title { color: #ffaa00; font-size: 14px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 2px; }
-        #blocker p { color: #ccc; font-size: 16px; margin: 3px 0; }
+        #blocker .section { margin: 8px 0; }
+        #blocker .section-title { color: #ffaa00; font-size: 13px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 2px; }
+        #blocker p { color: #ccc; font-size: 15px; margin: 2px 0; }
         #blocker .key { color: #ffaa00; font-weight: bold; }
-        #blocker .start-hint { margin-top: 30px; color: #888; font-size: 14px; animation: pulse 2s infinite; }
+        #blocker .start-hint { margin-top: 25px; color: #888; font-size: 14px; animation: pulse 2s infinite; }
         @keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
 
-        #hud {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            display: flex; justify-content: center; align-items: flex-end;
-            padding: 20px; pointer-events: none; z-index: 10;
-        }
+        #hud { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; align-items: flex-end; padding: 20px; pointer-events: none; z-index: 10; }
         #hud.hidden { display: none; }
 
-        #crosshair {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none; z-index: 10;
-        }
+        #crosshair { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 10; }
         #crosshair.hidden { display: none; }
         #crosshair .dot { width: 4px; height: 4px; background: #fff; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); }
         #crosshair .line { position: absolute; background: rgba(255,255,255,0.7); }
@@ -44,43 +36,19 @@
         #crosshair .line.left { height: 2px; width: 12px; left: -18px; top: 50%; transform: translateY(-50%); }
         #crosshair .line.right { height: 2px; width: 12px; right: -18px; top: 50%; transform: translateY(-50%); }
 
-        #weaponBar {
-            display: flex; gap: 8px; background: rgba(0,0,0,0.6);
-            border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
-            padding: 8px 16px; backdrop-filter: blur(10px);
-        }
-        .weapon-slot {
-            width: 70px; height: 70px; border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 8px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; color: #aaa;
-            font-size: 10px; text-align: center; transition: all 0.2s;
-        }
+        #weaponBar { display: flex; gap: 8px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 8px 16px; backdrop-filter: blur(10px); }
+        .weapon-slot { width: 70px; height: 70px; border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #aaa; font-size: 10px; text-align: center; transition: all 0.2s; }
         .weapon-slot.active { border-color: #ff4444; color: #fff; background: rgba(255,68,68,0.2); box-shadow: 0 0 15px rgba(255,68,68,0.3); }
         .weapon-slot .icon { font-size: 24px; margin-bottom: 2px; }
         .weapon-slot .key-hint { font-size: 9px; color: #666; margin-top: 2px; }
 
-        #objectCount {
-            position: fixed; top: 15px; left: 15px;
-            color: #aaa; font-size: 13px;
-            pointer-events: none; z-index: 10;
-        }
+        #objectCount { position: fixed; top: 15px; left: 15px; color: #aaa; font-size: 13px; pointer-events: none; z-index: 10; }
         #objectCount.hidden { display: none; }
 
-        #buildMode {
-            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
-            color: #4fc3f7; font-size: 16px; font-weight: bold;
-            pointer-events: none; z-index: 10;
-            text-shadow: 0 0 10px rgba(79,195,247,0.5);
-            opacity: 0; transition: opacity 0.3s;
-        }
+        #buildMode { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); color: #4fc3f7; font-size: 16px; font-weight: bold; pointer-events: none; z-index: 10; text-shadow: 0 0 10px rgba(79,195,247,0.5); opacity: 0; transition: opacity 0.3s; }
         #buildMode.show { opacity: 1; }
 
-        #hitMarker {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            pointer-events: none; z-index: 15;
-            width: 30px; height: 30px; opacity: 0;
-        }
+        #hitMarker { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); pointer-events: none; z-index: 15; width: 30px; height: 30px; opacity: 0; }
         #hitMarker.show { animation: hitPop 0.3s ease-out; }
         @keyframes hitPop { 0% { transform: translate(-50%,-50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%,-50%) scale(1.5); opacity: 0; } }
         #hitMarker .hm { position: absolute; background: #fff; }
@@ -89,11 +57,7 @@
         #hitMarker .hm.bl { width: 8px; height: 2px; bottom: 4px; left: 0; transform: rotate(45deg); }
         #hitMarker .hm.br { width: 8px; height: 2px; bottom: 4px; right: 0; transform: rotate(-45deg); }
 
-        #muzzleFlash {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 50% 80%, rgba(255,200,50,0.15), transparent 40%);
-            pointer-events: none; z-index: 5; opacity: 0;
-        }
+        #muzzleFlash { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 50% 80%, rgba(255,200,50,0.15), transparent 40%); pointer-events: none; z-index: 5; opacity: 0; }
         #muzzleFlash.flash { animation: mflash 0.08s ease-out; }
         @keyframes mflash { 0% { opacity: 1; } 100% { opacity: 0; } }
     </style>
@@ -104,20 +68,20 @@
     <h1>3D PHYSICS SHOOTER</h1>
     <div class="section">
         <div class="section-title">Movement</div>
-        <p><span class="key">WASD</span> - Move &nbsp; <span class="key">Mouse</span> - Look</p>
+        <p><span class="key">WASD</span> - Move &nbsp; <span class="key">Space</span> - Jump &nbsp; <span class="key">Mouse</span> - Look</p>
     </div>
     <div class="section">
         <div class="section-title">Combat</div>
         <p><span class="key">Left Click</span> - Shoot &nbsp; <span class="key">1-4</span> - Switch weapons</p>
     </div>
     <div class="section">
-        <div class="section-title">Build (place in front of you)</div>
+        <div class="section-title">Build (in front of you)</div>
         <p><span class="key">F</span> - Box &nbsp; <span class="key">G</span> - Plank &nbsp; <span class="key">H</span> - Ball</p>
         <p><span class="key">T</span> - Tower &nbsp; <span class="key">Y</span> - Wall &nbsp; <span class="key">U</span> - Pyramid</p>
     </div>
     <div class="section">
-        <div class="section-title">Ragdolls</div>
-        <p><span class="key">V</span> - Spawn ragdoll &nbsp; <span class="key">B</span> - Spawn 5 ragdolls</p>
+        <div class="section-title">NPCs (alive - walk, idle, flee)</div>
+        <p><span class="key">V</span> - Spawn NPC &nbsp; <span class="key">B</span> - Spawn 5 NPCs</p>
     </div>
     <div class="section">
         <p><span class="key">R</span> - Reset &nbsp; <span class="key">C</span> - Clear all</p>
@@ -133,37 +97,15 @@
     <div class="line right"></div>
 </div>
 
-<div id="hitMarker">
-    <div class="hm tl"></div>
-    <div class="hm tr"></div>
-    <div class="hm bl"></div>
-    <div class="hm br"></div>
-</div>
-
+<div id="hitMarker"><div class="hm tl"></div><div class="hm tr"></div><div class="hm bl"></div><div class="hm br"></div></div>
 <div id="muzzleFlash"></div>
 
 <div id="hud" class="hidden">
     <div id="weaponBar">
-        <div class="weapon-slot active" data-weapon="0">
-            <div class="icon">&#9679;</div>
-            <div>Cannon</div>
-            <div class="key-hint">1</div>
-        </div>
-        <div class="weapon-slot" data-weapon="1">
-            <div class="icon">&#9632;</div>
-            <div>Shotgun</div>
-            <div class="key-hint">2</div>
-        </div>
-        <div class="weapon-slot" data-weapon="2">
-            <div class="icon">&#10038;</div>
-            <div>Explosive</div>
-            <div class="key-hint">3</div>
-        </div>
-        <div class="weapon-slot" data-weapon="3">
-            <div class="icon">&#9650;</div>
-            <div>Sniper</div>
-            <div class="key-hint">4</div>
-        </div>
+        <div class="weapon-slot active" data-weapon="0"><div class="icon">&#9679;</div><div>Cannon</div><div class="key-hint">1</div></div>
+        <div class="weapon-slot" data-weapon="1"><div class="icon">&#9632;</div><div>Shotgun</div><div class="key-hint">2</div></div>
+        <div class="weapon-slot" data-weapon="2"><div class="icon">&#10038;</div><div>Explosive</div><div class="key-hint">3</div></div>
+        <div class="weapon-slot" data-weapon="3"><div class="icon">&#9650;</div><div>Sniper</div><div class="key-hint">4</div></div>
     </div>
 </div>
 
@@ -184,23 +126,23 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 
+// ========== SCENE ==========
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1a1a2e);
-scene.fog = new THREE.FogExp2(0x1a1a2e, 0.006);
+scene.fog = new THREE.FogExp2(0x1a1a2e, 0.005);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 5, 30);
+const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
 document.body.appendChild(renderer.domElement);
 
-// --- Physics ---
+// ========== PHYSICS WORLD ==========
 const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -25, 0) });
 world.broadphase = new CANNON.SAPBroadphase(world);
 world.allowSleep = true;
@@ -210,6 +152,7 @@ world.solver.tolerance = 0.001;
 const stoneMat = new CANNON.Material('stone');
 const metalMat = new CANNON.Material('metal');
 const fleshMat = new CANNON.Material('flesh');
+const playerMat = new CANNON.Material('player');
 
 world.addContactMaterial(new CANNON.ContactMaterial(stoneMat, stoneMat, { friction: 0.6, restitution: 0.2 }));
 world.addContactMaterial(new CANNON.ContactMaterial(metalMat, stoneMat, { friction: 0.3, restitution: 0.4 }));
@@ -217,29 +160,25 @@ world.addContactMaterial(new CANNON.ContactMaterial(metalMat, metalMat, { fricti
 world.addContactMaterial(new CANNON.ContactMaterial(fleshMat, stoneMat, { friction: 0.8, restitution: 0.1 }));
 world.addContactMaterial(new CANNON.ContactMaterial(fleshMat, metalMat, { friction: 0.5, restitution: 0.15 }));
 world.addContactMaterial(new CANNON.ContactMaterial(fleshMat, fleshMat, { friction: 0.7, restitution: 0.05 }));
+world.addContactMaterial(new CANNON.ContactMaterial(playerMat, stoneMat, { friction: 0.1, restitution: 0.0 }));
+world.addContactMaterial(new CANNON.ContactMaterial(playerMat, fleshMat, { friction: 0.3, restitution: 0.0 }));
 world.defaultContactMaterial = new CANNON.ContactMaterial(stoneMat, stoneMat, { friction: 0.5, restitution: 0.3 });
 
-// --- Lighting ---
+// ========== LIGHTING ==========
 scene.add(new THREE.AmbientLight(0x404060, 0.7));
-
 const dirLight = new THREE.DirectionalLight(0xffeedd, 1.5);
 dirLight.position.set(30, 50, 20);
 dirLight.castShadow = true;
 dirLight.shadow.mapSize.set(2048, 2048);
-dirLight.shadow.camera.left = -80;
-dirLight.shadow.camera.right = 80;
-dirLight.shadow.camera.top = 80;
-dirLight.shadow.camera.bottom = -80;
-dirLight.shadow.camera.near = 0.5;
-dirLight.shadow.camera.far = 200;
+dirLight.shadow.camera.left = -80; dirLight.shadow.camera.right = 80;
+dirLight.shadow.camera.top = 80; dirLight.shadow.camera.bottom = -80;
+dirLight.shadow.camera.near = 0.5; dirLight.shadow.camera.far = 200;
 scene.add(dirLight);
+const fill = new THREE.DirectionalLight(0x4466aa, 0.4);
+fill.position.set(-20, 20, -10);
+scene.add(fill);
 
-scene.add(new THREE.DirectionalLight(0x4466aa, 0.4).translateX(-20).translateY(20).translateZ(-10));
-const pl = new THREE.PointLight(0xff4400, 0.5, 50);
-pl.position.set(0, 10, 0);
-scene.add(pl);
-
-// --- Ground ---
+// ========== GROUND ==========
 const groundMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(300, 300),
     new THREE.MeshStandardMaterial({ color: 0x2a2a3e, roughness: 0.8, metalness: 0.2 })
@@ -247,432 +186,598 @@ const groundMesh = new THREE.Mesh(
 groundMesh.rotation.x = -Math.PI / 2;
 groundMesh.receiveShadow = true;
 scene.add(groundMesh);
-
-const gridHelper = new THREE.GridHelper(300, 75, 0x3a3a5a, 0x2a2a4a);
-gridHelper.position.y = 0.01;
-scene.add(gridHelper);
+scene.add(new THREE.GridHelper(300, 75, 0x3a3a5a, 0x2a2a4a).translateY(0.01));
 
 const groundBody = new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Plane(), material: stoneMat });
 groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 world.addBody(groundBody);
 
-for (const [px, pz, ry] of [[0, -150, 0], [0, 150, Math.PI], [-150, 0, Math.PI/2], [150, 0, -Math.PI/2]]) {
+for (const [px, pz, ry] of [[0,-150,0],[0,150,Math.PI],[-150,0,Math.PI/2],[150,0,-Math.PI/2]]) {
     const w = new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Plane(), material: stoneMat });
-    w.position.set(px, 0, pz);
-    w.quaternion.setFromEuler(0, ry, 0);
-    world.addBody(w);
+    w.position.set(px, 0, pz); w.quaternion.setFromEuler(0, ry, 0); world.addBody(w);
 }
 
-// --- Objects tracking ---
+// ========== SKYBOX ==========
+scene.add(new THREE.Mesh(
+    new THREE.SphereGeometry(400, 32, 32),
+    new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        uniforms: { topColor: { value: new THREE.Color(0x0a0a2e) }, bottomColor: { value: new THREE.Color(0x1a1a3e) }, offset: { value: 20 }, exponent: { value: 0.4 } },
+        vertexShader: `varying vec3 vWP; void main(){vec4 wp=modelMatrix*vec4(position,1.0);vWP=wp.xyz;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+        fragmentShader: `uniform vec3 topColor;uniform vec3 bottomColor;uniform float offset;uniform float exponent;varying vec3 vWP;void main(){float h=normalize(vWP+offset).y;gl_FragColor=vec4(mix(bottomColor,topColor,max(pow(max(h,0.0),exponent),0.0)),1.0);}`
+    })
+));
+
+// ========== TRACKING ==========
 const physicsObjects = [];
-const ragdolls = [];
+const npcs = [];
 const projectiles = [];
 const explosionParticles = [];
-const boxColors = [0xff6b6b, 0xffd93d, 0x6bcb77, 0x4d96ff, 0xff8cc8, 0xa66cff, 0xff922b, 0x20c997, 0x748ffc, 0xe599f7];
-const skinColors = [0xe8beac, 0xd4a574, 0xc68642, 0x8d5524, 0xf5d0c5, 0xdba88a];
+const boxColors = [0xff6b6b,0xffd93d,0x6bcb77,0x4d96ff,0xff8cc8,0xa66cff,0xff922b,0x20c997,0x748ffc,0xe599f7];
+const skinColors = [0xe8beac,0xd4a574,0xc68642,0x8d5524,0xf5d0c5,0xdba88a];
 
+// ========== PLAYER BODY ==========
+const playerBody = new CANNON.Body({
+    mass: 80,
+    shape: new CANNON.Sphere(0.8),
+    material: playerMat,
+    linearDamping: 0.95,
+    angularDamping: 1.0,
+    fixedRotation: true
+});
+playerBody.position.set(0, 5, 30);
+world.addBody(playerBody);
+
+let canJump = false;
+playerBody.addEventListener('collide', (e) => {
+    const contact = e.contact;
+    const ny = contact.ni.y;
+    if ((e.body === playerBody ? -ny : ny) > 0.5) canJump = true;
+});
+
+// ========== FIRST-PERSON WEAPON MODELS ==========
+const weaponContainer = new THREE.Group();
+camera.add(weaponContainer);
+scene.add(camera);
+
+function buildWeaponModels() {
+    const models = [];
+
+    // 0: Cannon - chunky barrel
+    const cannon = new THREE.Group();
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.06, 0.6, 8), new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.9, roughness: 0.2 }));
+    barrel.rotation.x = Math.PI / 2;
+    barrel.position.z = -0.3;
+    cannon.add(barrel);
+    const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.15, 0.12), new THREE.MeshStandardMaterial({ color: 0x332211, metalness: 0.3, roughness: 0.8 }));
+    grip.position.set(0, -0.1, 0.05);
+    cannon.add(grip);
+    const body1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.3), new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.8, roughness: 0.3 }));
+    body1.position.z = -0.05;
+    cannon.add(body1);
+    cannon.position.set(0.3, -0.28, -0.4);
+    cannon.rotation.set(0, 0, 0);
+    models.push(cannon);
+
+    // 1: Shotgun - double barrel
+    const shotgun = new THREE.Group();
+    const sb1 = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.7, 8), new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.9, roughness: 0.2 }));
+    sb1.rotation.x = Math.PI / 2; sb1.position.set(-0.025, 0, -0.35);
+    shotgun.add(sb1);
+    const sb2 = sb1.clone(); sb2.position.x = 0.025; shotgun.add(sb2);
+    const stock = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 0.35), new THREE.MeshStandardMaterial({ color: 0x553322, metalness: 0.2, roughness: 0.9 }));
+    stock.position.set(0, -0.02, 0.15);
+    shotgun.add(stock);
+    const pump = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.05, 0.12), new THREE.MeshStandardMaterial({ color: 0x664433, metalness: 0.3, roughness: 0.7 }));
+    pump.position.set(0, -0.05, -0.1);
+    shotgun.add(pump);
+    shotgun.position.set(0.3, -0.3, -0.4);
+    models.push(shotgun);
+
+    // 2: Explosive launcher - wide barrel
+    const launcher = new THREE.Group();
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.5, 10), new THREE.MeshStandardMaterial({ color: 0x2a4a2a, metalness: 0.7, roughness: 0.4 }));
+    tube.rotation.x = Math.PI / 2; tube.position.z = -0.25;
+    launcher.add(tube);
+    const lgrip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.14, 0.08), new THREE.MeshStandardMaterial({ color: 0x332211, metalness: 0.3, roughness: 0.8 }));
+    lgrip.position.set(0, -0.12, 0);
+    launcher.add(lgrip);
+    const sight = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.04, 0.02), new THREE.MeshStandardMaterial({ color: 0xff2200, metalness: 0.5, roughness: 0.3, emissive: 0xff2200, emissiveIntensity: 0.5 }));
+    sight.position.set(0, 0.08, -0.15);
+    launcher.add(sight);
+    launcher.position.set(0.32, -0.28, -0.4);
+    models.push(launcher);
+
+    // 3: Sniper - long thin barrel with scope
+    const sniper = new THREE.Group();
+    const sbarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.9, 8), new THREE.MeshStandardMaterial({ color: 0x2a2a3a, metalness: 0.95, roughness: 0.1 }));
+    sbarrel.rotation.x = Math.PI / 2; sbarrel.position.z = -0.45;
+    sniper.add(sbarrel);
+    const scope = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.15, 8), new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.9, roughness: 0.2 }));
+    scope.rotation.x = Math.PI / 2; scope.position.set(0, 0.05, -0.2);
+    sniper.add(scope);
+    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.028, 12), new THREE.MeshStandardMaterial({ color: 0x44aaff, metalness: 0.5, roughness: 0.1, emissive: 0x44aaff, emissiveIntensity: 0.3 }));
+    lens.position.set(0, 0.05, -0.275);
+    sniper.add(lens);
+    const sstock = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.06, 0.3), new THREE.MeshStandardMaterial({ color: 0x443322, metalness: 0.3, roughness: 0.8 }));
+    sstock.position.set(0, -0.01, 0.2);
+    sniper.add(sstock);
+    sniper.position.set(0.28, -0.26, -0.4);
+    models.push(sniper);
+
+    return models;
+}
+
+const weaponModels = buildWeaponModels();
+weaponModels.forEach(m => { m.visible = false; weaponContainer.add(m); });
+weaponModels[0].visible = true;
+
+let weaponBob = 0;
+let weaponRecoil = 0;
+
+// ========== HELPERS ==========
 function createBox(x, y, z, w, h, d, color, mass = 1) {
-    const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(w, h, d),
-        new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.3 })
-    );
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    scene.add(mesh);
-
-    const body = new CANNON.Body({
-        mass,
-        shape: new CANNON.Box(new CANNON.Vec3(w/2, h/2, d/2)),
-        position: new CANNON.Vec3(x, y, z),
-        material: stoneMat,
-        linearDamping: 0.05,
-        angularDamping: 0.2
-    });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.3 }));
+    mesh.castShadow = true; mesh.receiveShadow = true; scene.add(mesh);
+    const body = new CANNON.Body({ mass, shape: new CANNON.Box(new CANNON.Vec3(w/2, h/2, d/2)), position: new CANNON.Vec3(x, y, z), material: stoneMat, linearDamping: 0.05, angularDamping: 0.2 });
     world.addBody(body);
     physicsObjects.push({ mesh, body, type: 'dynamic' });
     return { mesh, body };
 }
 
 function createSphere(x, y, z, r, color, mass = 2, mat = metalMat) {
-    const mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(r, 16, 16),
-        new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.5 })
-    );
-    mesh.castShadow = true;
-    scene.add(mesh);
-
-    const body = new CANNON.Body({
-        mass,
-        shape: new CANNON.Sphere(r),
-        position: new CANNON.Vec3(x, y, z),
-        material: mat,
-        linearDamping: 0.05,
-        angularDamping: 0.2
-    });
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 16), new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.5 }));
+    mesh.castShadow = true; scene.add(mesh);
+    const body = new CANNON.Body({ mass, shape: new CANNON.Sphere(r), position: new CANNON.Vec3(x, y, z), material: mat, linearDamping: 0.05, angularDamping: 0.2 });
     world.addBody(body);
     physicsObjects.push({ mesh, body, type: 'dynamic' });
     return { mesh, body };
 }
 
-function createCylinder(x, y, z, rTop, rBot, h, color, mass = 1) {
-    const mesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(rTop, rBot, h, 12),
-        new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.3 })
-    );
-    mesh.castShadow = true;
-    scene.add(mesh);
-
-    const body = new CANNON.Body({
-        mass,
-        shape: new CANNON.Cylinder(rTop, rBot, h, 12),
-        position: new CANNON.Vec3(x, y, z),
-        material: stoneMat,
-        linearDamping: 0.05,
-        angularDamping: 0.2
-    });
-    world.addBody(body);
-    physicsObjects.push({ mesh, body, type: 'dynamic' });
-    return { mesh, body };
-}
-
-// --- Get spawn position in front of camera ---
 function getSpawnPos(dist = 10) {
-    const dir = new THREE.Vector3();
-    camera.getWorldDirection(dir);
-    dir.y = 0;
-    dir.normalize();
-    return {
-        x: camera.position.x + dir.x * dist,
-        z: camera.position.z + dir.z * dist
-    };
+    const dir = new THREE.Vector3(); camera.getWorldDirection(dir); dir.y = 0; dir.normalize();
+    return { x: playerBody.position.x + dir.x * dist, z: playerBody.position.z + dir.z * dist };
 }
 
-// --- Build functions (spawn in front of player) ---
-function buildBox() {
-    const p = getSpawnPos(8);
-    const color = boxColors[Math.floor(Math.random() * boxColors.length)];
-    createBox(p.x, 1, p.z, 1.2, 1.2, 1.2, color);
-    showBuildHint('Box placed');
-}
+// ========== BUILD FUNCTIONS ==========
+function buildBox() { const p = getSpawnPos(8); createBox(p.x, 1, p.z, 1.2, 1.2, 1.2, boxColors[Math.floor(Math.random()*boxColors.length)]); showBuildHint('Box placed'); }
+function buildPlank() { const p = getSpawnPos(8); createBox(p.x, 0.75, p.z, 4, 0.4, 1.2, boxColors[Math.floor(Math.random()*boxColors.length)]); showBuildHint('Plank placed'); }
+function buildBall() { const p = getSpawnPos(8); createSphere(p.x, 1, p.z, 0.6, boxColors[Math.floor(Math.random()*boxColors.length)], 1.5, stoneMat); showBuildHint('Ball placed'); }
 
-function buildPlank() {
-    const p = getSpawnPos(8);
-    const color = boxColors[Math.floor(Math.random() * boxColors.length)];
-    createBox(p.x, 0.75, p.z, 4, 0.4, 1.2, color);
-    showBuildHint('Plank placed');
-}
-
-function buildBall() {
-    const p = getSpawnPos(8);
-    const color = boxColors[Math.floor(Math.random() * boxColors.length)];
-    createSphere(p.x, 1, p.z, 0.6, color, 1.5, stoneMat);
-    showBuildHint('Ball placed');
-}
-
-function buildTower() {
-    const p = getSpawnPos(12);
-    for (let row = 0; row < 8; row++) {
-        const c = boxColors[row % boxColors.length];
-        if (row % 2 === 0) {
-            createBox(p.x - 0.6, row * 1.05 + 0.525, p.z, 1, 1, 2.5, c);
-            createBox(p.x + 0.6, row * 1.05 + 0.525, p.z, 1, 1, 2.5, c);
-        } else {
-            createBox(p.x, row * 1.05 + 0.525, p.z - 0.6, 2.5, 1, 1, c);
-            createBox(p.x, row * 1.05 + 0.525, p.z + 0.6, 2.5, 1, 1, c);
-        }
+function buildTowerAt(bx, bz) {
+    for (let row = 0; row < 8; row++) { const c = boxColors[row % boxColors.length];
+        if (row % 2 === 0) { createBox(bx-0.6, row*1.05+0.525, bz, 1,1,2.5, c); createBox(bx+0.6, row*1.05+0.525, bz, 1,1,2.5, c); }
+        else { createBox(bx, row*1.05+0.525, bz-0.6, 2.5,1,1, c); createBox(bx, row*1.05+0.525, bz+0.6, 2.5,1,1, c); }
     }
-    showBuildHint('Tower built');
 }
-
-function buildWall() {
-    const p = getSpawnPos(14);
-    const cols = 8, rows = 6;
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            const offset = (r % 2) * 0.6;
-            const color = boxColors[(r + c) % boxColors.length];
-            createBox(p.x + (c - cols/2) * 1.2 + offset, r * 1.05 + 0.525, p.z, 1.1, 1, 1.1, color);
-        }
+function buildWallAt(bx, bz) {
+    for (let r = 0; r < 6; r++) for (let c = 0; c < 8; c++)
+        createBox(bx + (c-4)*1.2 + (r%2)*0.6, r*1.05+0.525, bz, 1.1,1,1.1, boxColors[(r+c)%boxColors.length]);
+}
+function buildPyramidAt(bx, bz) {
+    for (let row = 0; row < 6; row++) { const count = 6-row;
+        for (let i = 0; i < count; i++) createBox(bx + (i-(count-1)/2)*1.15, row*1.05+0.525, bz, 1.1,1,1.1, boxColors[(row+i)%boxColors.length]);
     }
-    showBuildHint('Wall built');
 }
-
-function buildPyramid() {
-    const p = getSpawnPos(14);
-    const base = 6;
-    for (let row = 0; row < base; row++) {
-        const count = base - row;
-        for (let i = 0; i < count; i++) {
-            const color = boxColors[(row + i) % boxColors.length];
-            createBox(p.x + (i - (count-1)/2) * 1.15, row * 1.05 + 0.525, p.z, 1.1, 1, 1.1, color);
-        }
-    }
-    showBuildHint('Pyramid built');
-}
+function buildTower() { const p = getSpawnPos(12); buildTowerAt(p.x, p.z); showBuildHint('Tower built'); }
+function buildWall() { const p = getSpawnPos(14); buildWallAt(p.x, p.z); showBuildHint('Wall built'); }
+function buildPyramid() { const p = getSpawnPos(14); buildPyramidAt(p.x, p.z); showBuildHint('Pyramid built'); }
 
 let buildHintTimeout;
 function showBuildHint(text) {
-    const el = document.getElementById('buildMode');
-    el.textContent = text;
-    el.classList.add('show');
-    clearTimeout(buildHintTimeout);
-    buildHintTimeout = setTimeout(() => el.classList.remove('show'), 1200);
+    const el = document.getElementById('buildMode'); el.textContent = text; el.classList.add('show');
+    clearTimeout(buildHintTimeout); buildHintTimeout = setTimeout(() => el.classList.remove('show'), 1200);
 }
 
-// =====================================================
-// RAGDOLL SYSTEM
-// =====================================================
+// ========================================================================
+// NPC SYSTEM - Living characters with AI, animation, ragdoll-on-hit
+// ========================================================================
 
-function createRagdoll(x, y, z) {
-    const skinColor = skinColors[Math.floor(Math.random() * skinColors.length)];
-    const shirtColor = boxColors[Math.floor(Math.random() * boxColors.length)];
-    const pantsColor = [0x2244aa, 0x333333, 0x554422, 0x224422, 0x442222][Math.floor(Math.random() * 5)];
+class NPC {
+    constructor(x, y, z) {
+        this.alive = true;
+        this.state = 'idle'; // idle, walk, flee, ragdoll
+        this.stateTimer = Math.random() * 3;
+        this.walkDir = new CANNON.Vec3((Math.random()-0.5)*2, 0, (Math.random()-0.5)*2);
+        this.walkDir.normalize();
+        this.speed = 2.5 + Math.random() * 2;
+        this.animTime = Math.random() * Math.PI * 2;
+        this.fleeFrom = null;
+        this.hitCount = 0;
 
-    const parts = [];
-    const constraints = [];
+        const skinColor = skinColors[Math.floor(Math.random() * skinColors.length)];
+        const shirtColor = boxColors[Math.floor(Math.random() * boxColors.length)];
+        const pantsColor = [0x2244aa, 0x333333, 0x554422, 0x224422, 0x442222][Math.floor(Math.random()*5)];
+        const shoeColor = 0x222222;
 
-    function addPart(name, px, py, pz, shape, cannonShape, color, mass) {
-        const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.1 });
-        const mesh = new THREE.Mesh(shape, mat);
-        mesh.castShadow = true;
-        scene.add(mesh);
+        this.group = new THREE.Group();
+        this.group.position.set(x, 0, z);
+        scene.add(this.group);
 
-        const body = new CANNON.Body({
-            mass,
-            position: new CANNON.Vec3(x + px, y + py, z + pz),
+        const mkMat = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7, metalness: 0.1 });
+
+        // Head
+        this.head = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 12), mkMat(skinColor));
+        this.head.position.y = 3.35;
+        this.head.castShadow = true;
+        this.group.add(this.head);
+
+        // Eyes
+        const eyeGeo = new THREE.SphereGeometry(0.06, 8, 8);
+        const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const pupilGeo = new THREE.SphereGeometry(0.035, 8, 8);
+        const pupilMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+        this.leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+        this.leftEye.position.set(-0.1, 3.4, 0.25);
+        this.group.add(this.leftEye);
+        this.rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+        this.rightEye.position.set(0.1, 3.4, 0.25);
+        this.group.add(this.rightEye);
+        this.leftPupil = new THREE.Mesh(pupilGeo, pupilMat);
+        this.leftPupil.position.set(-0.1, 3.4, 0.3);
+        this.group.add(this.leftPupil);
+        this.rightPupil = new THREE.Mesh(pupilGeo, pupilMat);
+        this.rightPupil.position.set(0.1, 3.4, 0.3);
+        this.group.add(this.rightPupil);
+
+        // Upper body
+        this.upperBody = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.35), mkMat(shirtColor));
+        this.upperBody.position.y = 2.75; this.upperBody.castShadow = true;
+        this.group.add(this.upperBody);
+
+        // Lower body
+        this.lowerBody = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.3), mkMat(shirtColor));
+        this.lowerBody.position.y = 2.2; this.lowerBody.castShadow = true;
+        this.group.add(this.lowerBody);
+
+        // Pelvis
+        this.pelvis = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.3, 0.3), mkMat(pantsColor));
+        this.pelvis.position.y = 1.75; this.pelvis.castShadow = true;
+        this.group.add(this.pelvis);
+
+        // Arms
+        this.leftUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.5, 8), mkMat(shirtColor));
+        this.leftUpperArm.position.set(-0.48, 2.7, 0); this.leftUpperArm.castShadow = true;
+        this.group.add(this.leftUpperArm);
+        this.rightUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.5, 8), mkMat(shirtColor));
+        this.rightUpperArm.position.set(0.48, 2.7, 0); this.rightUpperArm.castShadow = true;
+        this.group.add(this.rightUpperArm);
+        this.leftLowerArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.45, 8), mkMat(skinColor));
+        this.leftLowerArm.position.set(-0.48, 2.15, 0); this.leftLowerArm.castShadow = true;
+        this.group.add(this.leftLowerArm);
+        this.rightLowerArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.45, 8), mkMat(skinColor));
+        this.rightLowerArm.position.set(0.48, 2.15, 0); this.rightLowerArm.castShadow = true;
+        this.group.add(this.rightLowerArm);
+
+        // Legs
+        this.leftUpperLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.09, 0.55, 8), mkMat(pantsColor));
+        this.leftUpperLeg.position.set(-0.16, 1.35, 0); this.leftUpperLeg.castShadow = true;
+        this.group.add(this.leftUpperLeg);
+        this.rightUpperLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.09, 0.55, 8), mkMat(pantsColor));
+        this.rightUpperLeg.position.set(0.16, 1.35, 0); this.rightUpperLeg.castShadow = true;
+        this.group.add(this.rightUpperLeg);
+        this.leftLowerLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.5, 8), mkMat(pantsColor));
+        this.leftLowerLeg.position.set(-0.16, 0.75, 0); this.leftLowerLeg.castShadow = true;
+        this.group.add(this.leftLowerLeg);
+        this.rightLowerLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.5, 8), mkMat(pantsColor));
+        this.rightLowerLeg.position.set(0.16, 0.75, 0); this.rightLowerLeg.castShadow = true;
+        this.group.add(this.rightLowerLeg);
+
+        // Feet
+        this.leftFoot = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, 0.22), mkMat(shoeColor));
+        this.leftFoot.position.set(-0.16, 0.44, 0.04); this.leftFoot.castShadow = true;
+        this.group.add(this.leftFoot);
+        this.rightFoot = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, 0.22), mkMat(shoeColor));
+        this.rightFoot.position.set(0.16, 0.44, 0.04); this.rightFoot.castShadow = true;
+        this.group.add(this.rightFoot);
+
+        // NPC collision body (capsule = sphere + cylinder)
+        this.body = new CANNON.Body({
+            mass: 70,
             material: fleshMat,
-            linearDamping: 0.15,
-            angularDamping: 0.4
+            fixedRotation: true,
+            linearDamping: 0.9,
+            angularDamping: 1.0
         });
-        body.addShape(cannonShape);
-        world.addBody(body);
+        this.body.addShape(new CANNON.Sphere(0.4), new CANNON.Vec3(0, 0.5, 0));
+        this.body.addShape(new CANNON.Sphere(0.4), new CANNON.Vec3(0, 1.2, 0));
+        this.body.addShape(new CANNON.Sphere(0.4), new CANNON.Vec3(0, 1.9, 0));
+        this.body.addShape(new CANNON.Sphere(0.35), new CANNON.Vec3(0, 2.5, 0));
+        this.body.addShape(new CANNON.Sphere(0.3), new CANNON.Vec3(0, 3.1, 0));
+        this.body.position.set(x, y, z);
+        this.body.npcRef = this;
+        world.addBody(this.body);
 
-        const part = { name, mesh, body };
-        parts.push(part);
-        physicsObjects.push({ mesh, body, type: 'ragdoll' });
-        return part;
+        // Ragdoll parts (created on death)
+        this.ragdollParts = [];
+        this.ragdollConstraints = [];
+        this.isRagdoll = false;
+
+        // Store materials for ragdoll
+        this._skinColor = skinColor;
+        this._shirtColor = shirtColor;
+        this._pantsColor = pantsColor;
     }
 
-    // Head
-    const head = addPart('head', 0, 3.6, 0,
-        new THREE.SphereGeometry(0.35, 12, 12),
-        new CANNON.Sphere(0.35),
-        skinColor, 2
-    );
-
-    // Torso (upper)
-    const upperTorso = addPart('upperTorso', 0, 2.8, 0,
-        new THREE.BoxGeometry(0.9, 0.7, 0.45),
-        new CANNON.Box(new CANNON.Vec3(0.45, 0.35, 0.225)),
-        shirtColor, 4
-    );
-
-    // Torso (lower)
-    const lowerTorso = addPart('lowerTorso', 0, 2.05, 0,
-        new THREE.BoxGeometry(0.8, 0.7, 0.4),
-        new CANNON.Box(new CANNON.Vec3(0.4, 0.35, 0.2)),
-        shirtColor, 3
-    );
-
-    // Pelvis
-    const pelvis = addPart('pelvis', 0, 1.35, 0,
-        new THREE.BoxGeometry(0.75, 0.4, 0.4),
-        new CANNON.Box(new CANNON.Vec3(0.375, 0.2, 0.2)),
-        pantsColor, 3
-    );
-
-    // Upper arms
-    const leftUpperArm = addPart('leftUpperArm', -0.7, 2.8, 0,
-        new THREE.CylinderGeometry(0.12, 0.11, 0.6, 8),
-        new CANNON.Cylinder(0.12, 0.11, 0.6, 8),
-        skinColor, 1
-    );
-    const rightUpperArm = addPart('rightUpperArm', 0.7, 2.8, 0,
-        new THREE.CylinderGeometry(0.12, 0.11, 0.6, 8),
-        new CANNON.Cylinder(0.12, 0.11, 0.6, 8),
-        skinColor, 1
-    );
-
-    // Lower arms
-    const leftLowerArm = addPart('leftLowerArm', -0.7, 2.1, 0,
-        new THREE.CylinderGeometry(0.1, 0.09, 0.6, 8),
-        new CANNON.Cylinder(0.1, 0.09, 0.6, 8),
-        skinColor, 0.8
-    );
-    const rightLowerArm = addPart('rightLowerArm', 0.7, 2.1, 0,
-        new THREE.CylinderGeometry(0.1, 0.09, 0.6, 8),
-        new CANNON.Cylinder(0.1, 0.09, 0.6, 8),
-        skinColor, 0.8
-    );
-
-    // Upper legs
-    const leftUpperLeg = addPart('leftUpperLeg', -0.22, 0.85, 0,
-        new THREE.CylinderGeometry(0.14, 0.13, 0.7, 8),
-        new CANNON.Cylinder(0.14, 0.13, 0.7, 8),
-        pantsColor, 2
-    );
-    const rightUpperLeg = addPart('rightUpperLeg', 0.22, 0.85, 0,
-        new THREE.CylinderGeometry(0.14, 0.13, 0.7, 8),
-        new CANNON.Cylinder(0.14, 0.13, 0.7, 8),
-        pantsColor, 2
-    );
-
-    // Lower legs
-    const leftLowerLeg = addPart('leftLowerLeg', -0.22, 0.2, 0,
-        new THREE.CylinderGeometry(0.12, 0.1, 0.7, 8),
-        new CANNON.Cylinder(0.12, 0.1, 0.7, 8),
-        pantsColor, 1.5
-    );
-    const rightLowerLeg = addPart('rightLowerLeg', 0.22, 0.2, 0,
-        new THREE.CylinderGeometry(0.12, 0.1, 0.7, 8),
-        new CANNON.Cylinder(0.12, 0.1, 0.7, 8),
-        pantsColor, 1.5
-    );
-
-    // --- Constraints (joints) ---
-    function addConeTwist(bodyA, bodyB, pivotA, pivotB, axisA, axisB, angle) {
-        const c = new CANNON.ConeTwistConstraint(bodyA, bodyB, {
-            pivotA: new CANNON.Vec3(...pivotA),
-            pivotB: new CANNON.Vec3(...pivotB),
-            axisA: new CANNON.Vec3(...axisA),
-            axisB: new CANNON.Vec3(...axisB),
-            angle,
-            twistAngle: angle * 0.6
-        });
-        world.addConstraint(c);
-        constraints.push(c);
-        return c;
-    }
-
-    function addHinge(bodyA, bodyB, pivotA, pivotB, axisA, axisB, minAngle, maxAngle) {
-        const c = new CANNON.HingeConstraint(bodyA, bodyB, {
-            pivotA: new CANNON.Vec3(...pivotA),
-            pivotB: new CANNON.Vec3(...pivotB),
-            axisA: new CANNON.Vec3(...axisA),
-            axisB: new CANNON.Vec3(...axisB),
-        });
-        if (minAngle !== undefined) {
-            c.setMotorMaxForce(0);
+    update(dt) {
+        if (this.isRagdoll) {
+            for (const rp of this.ragdollParts) {
+                rp.mesh.position.copy(rp.body.position);
+                rp.mesh.quaternion.copy(rp.body.quaternion);
+            }
+            return;
         }
-        world.addConstraint(c);
-        constraints.push(c);
-        return c;
+
+        this.stateTimer -= dt;
+        this.animTime += dt * (this.state === 'flee' ? 12 : this.state === 'walk' ? 6 : 2);
+
+        // AI state machine
+        if (this.stateTimer <= 0) {
+            if (this.state === 'flee') {
+                this.state = 'idle';
+                this.stateTimer = 1 + Math.random() * 2;
+            } else if (this.state === 'idle') {
+                this.state = 'walk';
+                this.walkDir.set((Math.random()-0.5)*2, 0, (Math.random()-0.5)*2);
+                this.walkDir.normalize();
+                this.stateTimer = 2 + Math.random() * 4;
+            } else {
+                this.state = 'idle';
+                this.stateTimer = 1 + Math.random() * 3;
+            }
+        }
+
+        // Avoid walls
+        const pos = this.body.position;
+        if (Math.abs(pos.x) > 90 || Math.abs(pos.z) > 90) {
+            this.walkDir.set(-pos.x, 0, -pos.z);
+            this.walkDir.normalize();
+            this.state = 'walk';
+            this.stateTimer = 2;
+        }
+
+        // Movement
+        let moveSpeed = 0;
+        if (this.state === 'walk') {
+            moveSpeed = this.speed;
+        } else if (this.state === 'flee') {
+            moveSpeed = this.speed * 2.5;
+        }
+
+        if (moveSpeed > 0) {
+            this.body.velocity.x = this.walkDir.x * moveSpeed;
+            this.body.velocity.z = this.walkDir.z * moveSpeed;
+
+            const targetAngle = Math.atan2(this.walkDir.x, this.walkDir.z);
+            let currentAngle = this.group.rotation.y;
+            let diff = targetAngle - currentAngle;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            this.group.rotation.y += diff * Math.min(1, dt * 8);
+        }
+
+        // Keep upright
+        this.body.quaternion.set(0, 0, 0, 1);
+
+        // Sync visual
+        this.group.position.set(pos.x, pos.y, pos.z);
+
+        // Animate
+        this.animate(dt);
     }
 
-    // Neck: head to upper torso
-    addConeTwist(head.body, upperTorso.body,
-        [0, -0.35, 0], [0, 0.4, 0],
-        [0, 1, 0], [0, 1, 0],
-        Math.PI / 6
-    );
+    animate(dt) {
+        const t = this.animTime;
+        const isMoving = this.state === 'walk' || this.state === 'flee';
+        const amp = isMoving ? (this.state === 'flee' ? 0.7 : 0.5) : 0.05;
 
-    // Spine upper: upper torso to lower torso
-    addConeTwist(upperTorso.body, lowerTorso.body,
-        [0, -0.35, 0], [0, 0.35, 0],
-        [0, 1, 0], [0, 1, 0],
-        Math.PI / 8
-    );
+        // Head bob
+        this.head.position.y = 3.35 + Math.sin(t * 2) * 0.02 * (isMoving ? 3 : 1);
+        this.head.rotation.x = isMoving ? Math.sin(t) * 0.05 : Math.sin(t * 0.5) * 0.02;
 
-    // Spine lower: lower torso to pelvis
-    addConeTwist(lowerTorso.body, pelvis.body,
-        [0, -0.35, 0], [0, 0.2, 0],
-        [0, 1, 0], [0, 1, 0],
-        Math.PI / 8
-    );
+        // Body sway
+        this.upperBody.rotation.z = Math.sin(t) * 0.03 * (isMoving ? 2 : 1);
+        this.lowerBody.rotation.z = -Math.sin(t) * 0.02;
 
-    // Left shoulder
-    addConeTwist(upperTorso.body, leftUpperArm.body,
-        [-0.5, 0.15, 0], [0, 0.3, 0],
-        [-1, 0, 0], [0, 1, 0],
-        Math.PI / 2.5
-    );
+        // Arms swing
+        const armSwing = Math.sin(t) * amp;
+        this.leftUpperArm.rotation.x = armSwing;
+        this.rightUpperArm.rotation.x = -armSwing;
+        this.leftUpperArm.position.y = 2.7;
+        this.rightUpperArm.position.y = 2.7;
 
-    // Right shoulder
-    addConeTwist(upperTorso.body, rightUpperArm.body,
-        [0.5, 0.15, 0], [0, 0.3, 0],
-        [1, 0, 0], [0, 1, 0],
-        Math.PI / 2.5
-    );
+        this.leftLowerArm.rotation.x = isMoving ? Math.max(0, Math.sin(t) * amp * 0.8) : Math.sin(t * 0.7) * 0.1;
+        this.rightLowerArm.rotation.x = isMoving ? Math.max(0, -Math.sin(t) * amp * 0.8) : Math.sin(t * 0.7 + 1) * 0.1;
+        this.leftLowerArm.position.y = 2.15 + (isMoving ? Math.sin(t) * 0.05 : 0);
+        this.rightLowerArm.position.y = 2.15 + (isMoving ? -Math.sin(t) * 0.05 : 0);
 
-    // Left elbow
-    addHinge(leftUpperArm.body, leftLowerArm.body,
-        [0, -0.3, 0], [0, 0.3, 0],
-        [1, 0, 0], [1, 0, 0],
-        0, Math.PI * 0.8
-    );
+        // Legs walk cycle
+        const legSwing = Math.sin(t) * amp;
+        this.leftUpperLeg.rotation.x = -legSwing;
+        this.rightUpperLeg.rotation.x = legSwing;
+        this.leftUpperLeg.position.y = 1.35;
+        this.rightUpperLeg.position.y = 1.35;
+        this.leftUpperLeg.position.z = isMoving ? Math.sin(t) * 0.15 : 0;
+        this.rightUpperLeg.position.z = isMoving ? -Math.sin(t) * 0.15 : 0;
 
-    // Right elbow
-    addHinge(rightUpperArm.body, rightLowerArm.body,
-        [0, -0.3, 0], [0, 0.3, 0],
-        [1, 0, 0], [1, 0, 0],
-        0, Math.PI * 0.8
-    );
+        this.leftLowerLeg.rotation.x = isMoving ? Math.max(0, -Math.sin(t + 0.5)) * amp * 0.9 : 0;
+        this.rightLowerLeg.rotation.x = isMoving ? Math.max(0, Math.sin(t + 0.5)) * amp * 0.9 : 0;
+        this.leftLowerLeg.position.y = 0.75;
+        this.rightLowerLeg.position.y = 0.75;
+        this.leftLowerLeg.position.z = isMoving ? Math.sin(t) * 0.1 : 0;
+        this.rightLowerLeg.position.z = isMoving ? -Math.sin(t) * 0.1 : 0;
 
-    // Left hip
-    addConeTwist(pelvis.body, leftUpperLeg.body,
-        [-0.22, -0.2, 0], [0, 0.35, 0],
-        [0, -1, 0], [0, 1, 0],
-        Math.PI / 4
-    );
+        // Feet
+        this.leftFoot.position.z = isMoving ? 0.04 + Math.sin(t) * 0.12 : 0.04;
+        this.rightFoot.position.z = isMoving ? 0.04 - Math.sin(t) * 0.12 : 0.04;
+        this.leftFoot.position.y = 0.44 + (isMoving ? Math.max(0, Math.sin(t)) * 0.08 : 0);
+        this.rightFoot.position.y = 0.44 + (isMoving ? Math.max(0, -Math.sin(t)) * 0.08 : 0);
 
-    // Right hip
-    addConeTwist(pelvis.body, rightUpperLeg.body,
-        [0.22, -0.2, 0], [0, 0.35, 0],
-        [0, -1, 0], [0, 1, 0],
-        Math.PI / 4
-    );
+        // Idle breathing
+        if (!isMoving) {
+            this.upperBody.scale.y = 1 + Math.sin(t * 0.8) * 0.02;
+            this.upperBody.scale.x = 1 + Math.sin(t * 0.8 + Math.PI) * 0.01;
+        } else {
+            this.upperBody.scale.set(1, 1, 1);
+        }
+    }
 
-    // Left knee
-    addHinge(leftUpperLeg.body, leftLowerLeg.body,
-        [0, -0.35, 0], [0, 0.35, 0],
-        [1, 0, 0], [1, 0, 0],
-        0, Math.PI * 0.7
-    );
+    flee(fromX, fromZ) {
+        this.state = 'flee';
+        this.stateTimer = 2 + Math.random() * 2;
+        const dx = this.body.position.x - fromX;
+        const dz = this.body.position.z - fromZ;
+        const len = Math.sqrt(dx * dx + dz * dz) || 1;
+        this.walkDir.set(dx / len, 0, dz / len);
+    }
 
-    // Right knee
-    addHinge(rightUpperLeg.body, rightLowerLeg.body,
-        [0, -0.35, 0], [0, 0.35, 0],
-        [1, 0, 0], [1, 0, 0],
-        0, Math.PI * 0.7
-    );
+    convertToRagdoll(impactForce, impactDir) {
+        if (this.isRagdoll) return;
+        this.isRagdoll = true;
+        this.alive = false;
 
-    const ragdoll = { parts, constraints };
-    ragdolls.push(ragdoll);
-    return ragdoll;
+        world.removeBody(this.body);
+
+        const pos = this.group.position;
+        const rot = this.group.rotation.y;
+
+        const partDefs = [
+            { name: 'head', geo: new THREE.SphereGeometry(0.3, 12, 12), shape: new CANNON.Sphere(0.3), color: this._skinColor, mass: 3, lx: 0, ly: 3.35, lz: 0 },
+            { name: 'upperBody', geo: new THREE.BoxGeometry(0.7, 0.6, 0.35), shape: new CANNON.Box(new CANNON.Vec3(0.35, 0.3, 0.175)), color: this._shirtColor, mass: 5, lx: 0, ly: 2.75, lz: 0 },
+            { name: 'lowerBody', geo: new THREE.BoxGeometry(0.6, 0.5, 0.3), shape: new CANNON.Box(new CANNON.Vec3(0.3, 0.25, 0.15)), color: this._shirtColor, mass: 4, lx: 0, ly: 2.2, lz: 0 },
+            { name: 'pelvis', geo: new THREE.BoxGeometry(0.55, 0.3, 0.3), shape: new CANNON.Box(new CANNON.Vec3(0.275, 0.15, 0.15)), color: this._pantsColor, mass: 3, lx: 0, ly: 1.75, lz: 0 },
+            { name: 'lUA', geo: new THREE.CylinderGeometry(0.09, 0.08, 0.5, 8), shape: new CANNON.Cylinder(0.09, 0.08, 0.5, 8), color: this._shirtColor, mass: 1.5, lx: -0.48, ly: 2.7, lz: 0 },
+            { name: 'rUA', geo: new THREE.CylinderGeometry(0.09, 0.08, 0.5, 8), shape: new CANNON.Cylinder(0.09, 0.08, 0.5, 8), color: this._shirtColor, mass: 1.5, lx: 0.48, ly: 2.7, lz: 0 },
+            { name: 'lLA', geo: new THREE.CylinderGeometry(0.07, 0.06, 0.45, 8), shape: new CANNON.Cylinder(0.07, 0.06, 0.45, 8), color: this._skinColor, mass: 1, lx: -0.48, ly: 2.15, lz: 0 },
+            { name: 'rLA', geo: new THREE.CylinderGeometry(0.07, 0.06, 0.45, 8), shape: new CANNON.Cylinder(0.07, 0.06, 0.45, 8), color: this._skinColor, mass: 1, lx: 0.48, ly: 2.15, lz: 0 },
+            { name: 'lUL', geo: new THREE.CylinderGeometry(0.1, 0.09, 0.55, 8), shape: new CANNON.Cylinder(0.1, 0.09, 0.55, 8), color: this._pantsColor, mass: 2.5, lx: -0.16, ly: 1.35, lz: 0 },
+            { name: 'rUL', geo: new THREE.CylinderGeometry(0.1, 0.09, 0.55, 8), shape: new CANNON.Cylinder(0.1, 0.09, 0.55, 8), color: this._pantsColor, mass: 2.5, lx: 0.16, ly: 1.35, lz: 0 },
+            { name: 'lLL', geo: new THREE.CylinderGeometry(0.08, 0.07, 0.5, 8), shape: new CANNON.Cylinder(0.08, 0.07, 0.5, 8), color: this._pantsColor, mass: 2, lx: -0.16, ly: 0.75, lz: 0 },
+            { name: 'rLL', geo: new THREE.CylinderGeometry(0.08, 0.07, 0.5, 8), shape: new CANNON.Cylinder(0.08, 0.07, 0.5, 8), color: this._pantsColor, mass: 2, lx: 0.16, ly: 0.75, lz: 0 },
+        ];
+
+        // Remove animated group
+        scene.remove(this.group);
+        this.group.traverse(c => { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
+
+        const cosR = Math.cos(rot), sinR = Math.sin(rot);
+        const bodies = {};
+
+        for (const def of partDefs) {
+            const wx = pos.x + def.lx * cosR - def.lz * sinR;
+            const wy = pos.y + def.ly;
+            const wz = pos.z + def.lx * sinR + def.lz * cosR;
+
+            const mesh = new THREE.Mesh(def.geo, new THREE.MeshStandardMaterial({ color: def.color, roughness: 0.7, metalness: 0.1 }));
+            mesh.castShadow = true; scene.add(mesh);
+
+            const body = new CANNON.Body({ mass: def.mass, material: fleshMat, linearDamping: 0.15, angularDamping: 0.4 });
+            body.addShape(def.shape);
+            body.position.set(wx, wy, wz);
+            body.quaternion.setFromEuler(0, rot, 0);
+            world.addBody(body);
+
+            bodies[def.name] = body;
+            this.ragdollParts.push({ mesh, body });
+            physicsObjects.push({ mesh, body, type: 'ragdoll' });
+        }
+
+        const ct = (bA, bB, pA, pB, axis, angle) => {
+            const c = new CANNON.ConeTwistConstraint(bA, bB, {
+                pivotA: new CANNON.Vec3(...pA), pivotB: new CANNON.Vec3(...pB),
+                axisA: new CANNON.Vec3(...axis), axisB: new CANNON.Vec3(...axis),
+                angle, twistAngle: angle * 0.5
+            });
+            world.addConstraint(c); this.ragdollConstraints.push(c);
+        };
+        const hg = (bA, bB, pA, pB, axis) => {
+            const c = new CANNON.HingeConstraint(bA, bB, {
+                pivotA: new CANNON.Vec3(...pA), pivotB: new CANNON.Vec3(...pB),
+                axisA: new CANNON.Vec3(...axis), axisB: new CANNON.Vec3(...axis)
+            });
+            world.addConstraint(c); this.ragdollConstraints.push(c);
+        };
+
+        ct(bodies.head, bodies.upperBody, [0,-0.3,0], [0,0.35,0], [0,1,0], Math.PI/5);
+        ct(bodies.upperBody, bodies.lowerBody, [0,-0.3,0], [0,0.25,0], [0,1,0], Math.PI/8);
+        ct(bodies.lowerBody, bodies.pelvis, [0,-0.25,0], [0,0.15,0], [0,1,0], Math.PI/8);
+        ct(bodies.upperBody, bodies.lUA, [-0.4,0.1,0], [0,0.25,0], [-1,0,0], Math.PI/2.5);
+        ct(bodies.upperBody, bodies.rUA, [0.4,0.1,0], [0,0.25,0], [1,0,0], Math.PI/2.5);
+        hg(bodies.lUA, bodies.lLA, [0,-0.25,0], [0,0.22,0], [1,0,0]);
+        hg(bodies.rUA, bodies.rLA, [0,-0.25,0], [0,0.22,0], [1,0,0]);
+        ct(bodies.pelvis, bodies.lUL, [-0.16,-0.15,0], [0,0.27,0], [0,-1,0], Math.PI/4);
+        ct(bodies.pelvis, bodies.rUL, [0.16,-0.15,0], [0,0.27,0], [0,-1,0], Math.PI/4);
+        hg(bodies.lUL, bodies.lLL, [0,-0.27,0], [0,0.25,0], [1,0,0]);
+        hg(bodies.rUL, bodies.rLL, [0,-0.27,0], [0,0.25,0], [1,0,0]);
+
+        // Apply impact
+        if (impactForce && impactDir) {
+            for (const rp of this.ragdollParts) {
+                const f = impactForce * (0.3 + Math.random() * 0.7);
+                rp.body.applyImpulse(new CANNON.Vec3(impactDir.x * f, impactDir.y * f + f * 0.3, impactDir.z * f));
+                rp.body.wakeUp();
+            }
+        }
+    }
+
+    destroy() {
+        if (!this.isRagdoll) {
+            world.removeBody(this.body);
+            scene.remove(this.group);
+            this.group.traverse(c => { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
+        } else {
+            for (const c of this.ragdollConstraints) world.removeConstraint(c);
+            for (const rp of this.ragdollParts) {
+                scene.remove(rp.mesh);
+                world.removeBody(rp.body);
+                rp.mesh.geometry.dispose(); rp.mesh.material.dispose();
+                const idx = physicsObjects.indexOf(rp);
+                if (idx === -1) {
+                    const idx2 = physicsObjects.findIndex(o => o.body === rp.body);
+                    if (idx2 !== -1) physicsObjects.splice(idx2, 1);
+                } else {
+                    physicsObjects.splice(idx, 1);
+                }
+            }
+        }
+    }
 }
 
-function spawnRagdoll() {
+function spawnNPC() {
     const p = getSpawnPos(10);
-    createRagdoll(p.x, 4, p.z);
-    showBuildHint('Ragdoll spawned');
+    npcs.push(new NPC(p.x, 0.5, p.z));
+    showBuildHint('NPC spawned');
 }
 
-function spawnMultipleRagdolls() {
-    const p = getSpawnPos(12);
+function spawnMultipleNPCs() {
+    const p = getSpawnPos(14);
     for (let i = 0; i < 5; i++) {
-        createRagdoll(p.x + (i - 2) * 2, 4 + i * 0.5, p.z + (Math.random()-0.5)*3);
+        npcs.push(new NPC(p.x + (i-2)*3, 0.5, p.z + (Math.random()-0.5)*4));
     }
-    showBuildHint('5 Ragdolls spawned');
+    showBuildHint('5 NPCs spawned');
 }
 
-// --- Clear ---
+function alertNearbyNPCs(x, z, radius) {
+    for (const npc of npcs) {
+        if (npc.isRagdoll) continue;
+        const dx = npc.body.position.x - x;
+        const dz = npc.body.position.z - z;
+        if (dx*dx + dz*dz < radius*radius) {
+            npc.flee(x, z);
+        }
+    }
+}
+
+// ========== CLEAR / RESET ==========
 function clearAll() {
     for (let i = physicsObjects.length - 1; i >= 0; i--) {
         const obj = physicsObjects[i];
-        if (obj.type !== 'static') {
-            scene.remove(obj.mesh);
-            world.removeBody(obj.body);
-            obj.mesh.geometry.dispose();
-            obj.mesh.material.dispose();
-            physicsObjects.splice(i, 1);
-        }
+        scene.remove(obj.mesh); world.removeBody(obj.body);
+        obj.mesh.geometry.dispose(); obj.mesh.material.dispose();
+        physicsObjects.splice(i, 1);
     }
-    for (const r of ragdolls) {
-        for (const c of r.constraints) {
-            world.removeConstraint(c);
-        }
-    }
-    ragdolls.length = 0;
+    for (const npc of npcs) npc.destroy();
+    npcs.length = 0;
 }
 
 function resetScene() {
@@ -680,57 +785,21 @@ function resetScene() {
     buildTowerAt(5, -10);
     buildWallAt(-8, -18);
     buildPyramidAt(0, -14);
-    createRagdoll(-4, 4, -8);
-    createRagdoll(6, 4, -12);
-}
-
-function buildTowerAt(bx, bz) {
-    for (let row = 0; row < 8; row++) {
-        const c = boxColors[row % boxColors.length];
-        if (row % 2 === 0) {
-            createBox(bx - 0.6, row * 1.05 + 0.525, bz, 1, 1, 2.5, c);
-            createBox(bx + 0.6, row * 1.05 + 0.525, bz, 1, 1, 2.5, c);
-        } else {
-            createBox(bx, row * 1.05 + 0.525, bz - 0.6, 2.5, 1, 1, c);
-            createBox(bx, row * 1.05 + 0.525, bz + 0.6, 2.5, 1, 1, c);
-        }
-    }
-}
-
-function buildWallAt(bx, bz) {
-    const cols = 8, rows = 6;
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            const offset = (r % 2) * 0.6;
-            const color = boxColors[(r + c) % boxColors.length];
-            createBox(bx + (c - cols/2) * 1.2 + offset, r * 1.05 + 0.525, bz, 1.1, 1, 1.1, color);
-        }
-    }
-}
-
-function buildPyramidAt(bx, bz) {
-    const base = 6;
-    for (let row = 0; row < base; row++) {
-        const count = base - row;
-        for (let i = 0; i < count; i++) {
-            const color = boxColors[(row + i) % boxColors.length];
-            createBox(bx + (i - (count-1)/2) * 1.15, row * 1.05 + 0.525, bz, 1.1, 1, 1.1, color);
-        }
-    }
+    npcs.push(new NPC(-4, 0.5, -8));
+    npcs.push(new NPC(6, 0.5, -12));
+    npcs.push(new NPC(-8, 0.5, 5));
+    npcs.push(new NPC(10, 0.5, 0));
 }
 
 resetScene();
 
-// --- FPS Controls ---
+// ========== CONTROLS ==========
 let locked = false;
-const moveVelocity = new THREE.Vector3();
-const euler = new THREE.Euler(0, 0, 0, 'YXZ');
 const keys = {};
 let pitch = 0, yaw = 0;
+const euler = new THREE.Euler(0, 0, 0, 'YXZ');
 
-document.getElementById('blocker').addEventListener('click', () => {
-    renderer.domElement.requestPointerLock();
-});
+document.getElementById('blocker').addEventListener('click', () => renderer.domElement.requestPointerLock());
 
 document.addEventListener('pointerlockchange', () => {
     locked = !!document.pointerLockElement;
@@ -744,7 +813,7 @@ document.addEventListener('mousemove', (e) => {
     if (!locked) return;
     yaw -= e.movementX * 0.002;
     pitch -= e.movementY * 0.002;
-    pitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, pitch));
+    pitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, pitch));
     euler.set(pitch, yaw, 0);
     camera.quaternion.setFromEuler(euler);
 });
@@ -759,7 +828,7 @@ document.addEventListener('keydown', (e) => {
         case 'Digit2': selectWeapon(1); break;
         case 'Digit3': selectWeapon(2); break;
         case 'Digit4': selectWeapon(3); break;
-        case 'KeyR': resetScene(); break;
+        case 'KeyR': resetScene(); playerBody.position.set(0,5,30); playerBody.velocity.set(0,0,0); break;
         case 'KeyC': clearAll(); break;
         case 'KeyF': buildBox(); break;
         case 'KeyG': buildPlank(); break;
@@ -767,49 +836,61 @@ document.addEventListener('keydown', (e) => {
         case 'KeyT': buildTower(); break;
         case 'KeyY': buildWall(); break;
         case 'KeyU': buildPyramid(); break;
-        case 'KeyV': spawnRagdoll(); break;
-        case 'KeyB': spawnMultipleRagdolls(); break;
+        case 'KeyV': spawnNPC(); break;
+        case 'KeyB': spawnMultipleNPCs(); break;
+        case 'Space':
+            if (canJump) { playerBody.velocity.y = 10; canJump = false; }
+            break;
     }
 });
 
-function updateMovement(dt) {
+function updatePlayer(dt) {
     if (!locked) return;
-    const speed = 30;
-    const dir = new THREE.Vector3();
-    camera.getWorldDirection(dir);
-    dir.y = 0;
-    dir.normalize();
-    const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
 
-    moveVelocity.set(0, 0, 0);
-    if (keys['KeyW']) moveVelocity.add(dir);
-    if (keys['KeyS']) moveVelocity.sub(dir);
-    if (keys['KeyD']) moveVelocity.add(right);
-    if (keys['KeyA']) moveVelocity.sub(right);
+    const speed = 20;
+    const dir = new THREE.Vector3(); camera.getWorldDirection(dir); dir.y = 0; dir.normalize();
+    const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0,1,0)).normalize();
 
-    if (moveVelocity.length() > 0) {
-        moveVelocity.normalize().multiplyScalar(speed * dt);
-        camera.position.add(moveVelocity);
+    const input = new THREE.Vector3();
+    if (keys['KeyW']) input.add(dir);
+    if (keys['KeyS']) input.sub(dir);
+    if (keys['KeyD']) input.add(right);
+    if (keys['KeyA']) input.sub(right);
+
+    if (input.length() > 0) {
+        input.normalize();
+        playerBody.velocity.x = input.x * speed;
+        playerBody.velocity.z = input.z * speed;
+        weaponBob += dt * 8;
+    } else {
+        weaponBob += dt * 2;
     }
-    camera.position.y = 5;
+
+    // Sync camera to player body
+    camera.position.set(playerBody.position.x, playerBody.position.y + 1.2, playerBody.position.z);
+
+    // Weapon bob + recoil animation
+    weaponRecoil *= 0.85;
+    const bobX = Math.sin(weaponBob) * 0.01;
+    const bobY = Math.sin(weaponBob * 2) * 0.008;
+    weaponContainer.position.set(bobX, bobY, -weaponRecoil * 0.15);
+    weaponContainer.rotation.x = -weaponRecoil * 0.1;
 }
 
-// --- Weapons ---
+// ========== WEAPONS ==========
 const weapons = [
-    { name: 'Cannon', speed: 80, size: 0.5, mass: 8, color: 0xff4444, count: 1, spread: 0, explosive: false, cooldown: 0.3 },
-    { name: 'Shotgun', speed: 60, size: 0.2, mass: 1.5, color: 0xffaa00, count: 8, spread: 0.08, explosive: false, cooldown: 0.6 },
-    { name: 'Explosive', speed: 50, size: 0.4, mass: 5, color: 0xff2200, count: 1, spread: 0, explosive: true, cooldown: 0.8 },
-    { name: 'Sniper', speed: 200, size: 0.15, mass: 20, color: 0x44aaff, count: 1, spread: 0, explosive: false, cooldown: 0.2 },
+    { name: 'Cannon', speed: 80, size: 0.5, mass: 8, color: 0xff4444, count: 1, spread: 0, explosive: false, cooldown: 0.3, recoil: 0.5 },
+    { name: 'Shotgun', speed: 60, size: 0.2, mass: 1.5, color: 0xffaa00, count: 8, spread: 0.08, explosive: false, cooldown: 0.6, recoil: 0.8 },
+    { name: 'Explosive', speed: 50, size: 0.4, mass: 5, color: 0xff2200, count: 1, spread: 0, explosive: true, cooldown: 0.8, recoil: 0.6 },
+    { name: 'Sniper', speed: 200, size: 0.15, mass: 20, color: 0x44aaff, count: 1, spread: 0, explosive: false, cooldown: 0.2, recoil: 0.3 },
 ];
-
 let currentWeapon = 0;
 let lastShotTime = 0;
 
 function selectWeapon(idx) {
     currentWeapon = idx;
-    document.querySelectorAll('.weapon-slot').forEach((el, i) => {
-        el.classList.toggle('active', i === idx);
-    });
+    document.querySelectorAll('.weapon-slot').forEach((el, i) => el.classList.toggle('active', i === idx));
+    weaponModels.forEach((m, i) => m.visible = (i === idx));
 }
 
 function shoot() {
@@ -817,59 +898,75 @@ function shoot() {
     const wp = weapons[currentWeapon];
     if (now - lastShotTime < wp.cooldown) return;
     lastShotTime = now;
+    weaponRecoil = wp.recoil;
 
-    const dir = new THREE.Vector3();
-    camera.getWorldDirection(dir);
+    const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
 
     for (let i = 0; i < wp.count; i++) {
         const d = dir.clone();
         if (wp.spread > 0) {
-            d.x += (Math.random() - 0.5) * wp.spread;
-            d.y += (Math.random() - 0.5) * wp.spread;
-            d.z += (Math.random() - 0.5) * wp.spread;
+            d.x += (Math.random()-0.5) * wp.spread;
+            d.y += (Math.random()-0.5) * wp.spread;
+            d.z += (Math.random()-0.5) * wp.spread;
             d.normalize();
         }
 
-        const startPos = camera.position.clone().add(d.clone().multiplyScalar(1.5));
+        const startPos = camera.position.clone().add(d.clone().multiplyScalar(2));
         const obj = createSphere(startPos.x, startPos.y, startPos.z, wp.size, wp.color, wp.mass, metalMat);
-
-        obj.body.velocity.set(d.x * wp.speed, d.y * wp.speed, d.z * wp.speed);
+        obj.body.velocity.set(d.x*wp.speed, d.y*wp.speed, d.z*wp.speed);
         obj.body.allowSleep = false;
+        obj.body.collisionFilterGroup = 2;
+        obj.body.collisionFilterMask = -1 & ~2;
+
+        const impactDir = d.clone();
 
         if (wp.explosive) {
             let exploded = false;
-            obj.body.addEventListener('collide', () => {
+            obj.body.addEventListener('collide', (e) => {
                 if (exploded) return;
                 exploded = true;
-                explode(obj.body.position, 14, 80);
+                const p = obj.body.position;
+                explode(p, 14, 80);
+                alertNearbyNPCs(p.x, p.z, 25);
+
+                for (const npc of npcs) {
+                    if (npc.isRagdoll) continue;
+                    const dx = npc.body.position.x - p.x;
+                    const dz = npc.body.position.z - p.z;
+                    if (dx*dx+dz*dz < 10*10) {
+                        npc.convertToRagdoll(40, { x: dx*0.5, y: 1, z: dz*0.5 });
+                    }
+                }
+
                 setTimeout(() => {
                     const idx2 = physicsObjects.indexOf(obj);
-                    if (idx2 !== -1) {
-                        scene.remove(obj.mesh);
-                        world.removeBody(obj.body);
-                        obj.mesh.geometry.dispose();
-                        obj.mesh.material.dispose();
-                        physicsObjects.splice(idx2, 1);
-                    }
+                    if (idx2 !== -1) { scene.remove(obj.mesh); world.removeBody(obj.body); obj.mesh.geometry.dispose(); obj.mesh.material.dispose(); physicsObjects.splice(idx2, 1); }
                 }, 0);
             });
         }
 
-        obj.body.addEventListener('collide', () => showHitMarker());
+        obj.body.addEventListener('collide', (e) => {
+            showHitMarker();
+            if (e.body.npcRef && !e.body.npcRef.isRagdoll) {
+                const npc = e.body.npcRef;
+                npc.hitCount++;
+                if (npc.hitCount >= 1) {
+                    npc.convertToRagdoll(wp.mass * wp.speed * 0.15, impactDir);
+                    alertNearbyNPCs(npc.body.position.x, npc.body.position.z, 30);
+                }
+            }
+        });
+
         projectiles.push({ obj, time: now });
     }
 
     const mf = document.getElementById('muzzleFlash');
-    mf.classList.remove('flash');
-    void mf.offsetWidth;
-    mf.classList.add('flash');
+    mf.classList.remove('flash'); void mf.offsetWidth; mf.classList.add('flash');
 }
 
 function showHitMarker() {
     const hm = document.getElementById('hitMarker');
-    hm.classList.remove('show');
-    void hm.offsetWidth;
-    hm.classList.add('show');
+    hm.classList.remove('show'); void hm.offsetWidth; hm.classList.add('show');
 }
 
 function explode(position, radius, force) {
@@ -878,69 +975,43 @@ function explode(position, radius, force) {
         const dx = obj.body.position.x - position.x;
         const dy = obj.body.position.y - position.y;
         const dz = obj.body.position.z - position.z;
-        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        const dist = Math.sqrt(dx*dx+dy*dy+dz*dz);
         if (dist < radius && dist > 0.01) {
-            const strength = force * (1 - dist / radius);
-            const impulse = new CANNON.Vec3(
-                (dx / dist) * strength,
-                (dy / dist) * strength + strength * 0.4,
-                (dz / dist) * strength
-            );
-            obj.body.applyImpulse(impulse);
+            const strength = force * (1 - dist/radius);
+            obj.body.applyImpulse(new CANNON.Vec3((dx/dist)*strength, (dy/dist)*strength + strength*0.4, (dz/dist)*strength));
             obj.body.wakeUp();
         }
     }
-
     for (let i = 0; i < 40; i++) {
-        const geo = new THREE.SphereGeometry(0.1 + Math.random() * 0.25, 6, 6);
-        const mat = new THREE.MeshBasicMaterial({
-            color: new THREE.Color().setHSL(0.03 + Math.random() * 0.1, 1, 0.4 + Math.random() * 0.4)
-        });
+        const geo = new THREE.SphereGeometry(0.1+Math.random()*0.25, 6, 6);
+        const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color().setHSL(0.03+Math.random()*0.1, 1, 0.4+Math.random()*0.4) });
         const particle = new THREE.Mesh(geo, mat);
         particle.position.set(position.x, position.y, position.z);
         scene.add(particle);
-        explosionParticles.push({
-            mesh: particle,
-            velocity: new THREE.Vector3(
-                (Math.random() - 0.5) * 25,
-                Math.random() * 18,
-                (Math.random() - 0.5) * 25
-            ),
-            life: 1.0
-        });
+        explosionParticles.push({ mesh: particle, velocity: new THREE.Vector3((Math.random()-0.5)*25, Math.random()*18, (Math.random()-0.5)*25), life: 1.0 });
     }
-
     const light = new THREE.PointLight(0xff4400, 8, 30);
     light.position.set(position.x, position.y, position.z);
     scene.add(light);
     setTimeout(() => scene.remove(light), 250);
 }
 
-document.addEventListener('mousedown', (e) => {
-    if (!locked || e.button !== 0) return;
-    shoot();
-});
+document.addEventListener('mousedown', (e) => { if (!locked || e.button !== 0) return; shoot(); });
 
-// --- Cleanup ---
+// ========== CLEANUP ==========
 function cleanupProjectiles(now) {
-    for (let i = projectiles.length - 1; i >= 0; i--) {
+    for (let i = projectiles.length-1; i >= 0; i--) {
         if (now - projectiles[i].time > 10) {
             const obj = projectiles[i].obj;
             const idx = physicsObjects.indexOf(obj);
-            if (idx !== -1) {
-                scene.remove(obj.mesh);
-                world.removeBody(obj.body);
-                obj.mesh.geometry.dispose();
-                obj.mesh.material.dispose();
-                physicsObjects.splice(idx, 1);
-            }
+            if (idx !== -1) { scene.remove(obj.mesh); world.removeBody(obj.body); obj.mesh.geometry.dispose(); obj.mesh.material.dispose(); physicsObjects.splice(idx, 1); }
             projectiles.splice(i, 1);
         }
     }
 }
 
 function updateParticles(dt) {
-    for (let i = explosionParticles.length - 1; i >= 0; i--) {
+    for (let i = explosionParticles.length-1; i >= 0; i--) {
         const p = explosionParticles[i];
         p.velocity.y -= 15 * dt;
         p.mesh.position.add(p.velocity.clone().multiplyScalar(dt));
@@ -948,49 +1019,11 @@ function updateParticles(dt) {
         p.mesh.material.opacity = Math.max(0, p.life);
         p.mesh.material.transparent = true;
         p.mesh.scale.setScalar(Math.max(0.01, p.life));
-
-        if (p.life <= 0) {
-            scene.remove(p.mesh);
-            p.mesh.geometry.dispose();
-            p.mesh.material.dispose();
-            explosionParticles.splice(i, 1);
-        }
+        if (p.life <= 0) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); explosionParticles.splice(i, 1); }
     }
 }
 
-// --- Skybox ---
-const skyGeo = new THREE.SphereGeometry(400, 32, 32);
-const skyMat = new THREE.ShaderMaterial({
-    side: THREE.BackSide,
-    uniforms: {
-        topColor: { value: new THREE.Color(0x0a0a2e) },
-        bottomColor: { value: new THREE.Color(0x1a1a3e) },
-        offset: { value: 20 },
-        exponent: { value: 0.4 }
-    },
-    vertexShader: `
-        varying vec3 vWorldPosition;
-        void main() {
-            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-            vWorldPosition = worldPosition.xyz;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    `,
-    fragmentShader: `
-        uniform vec3 topColor;
-        uniform vec3 bottomColor;
-        uniform float offset;
-        uniform float exponent;
-        varying vec3 vWorldPosition;
-        void main() {
-            float h = normalize(vWorldPosition + offset).y;
-            gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
-        }
-    `
-});
-scene.add(new THREE.Mesh(skyGeo, skyMat));
-
-// --- Game loop ---
+// ========== GAME LOOP ==========
 const clock = new THREE.Clock();
 let frameCount = 0;
 
@@ -999,7 +1032,7 @@ function animate() {
     const dt = Math.min(clock.getDelta(), 0.05);
     const now = performance.now() / 1000;
 
-    updateMovement(dt);
+    updatePlayer(dt);
     world.step(1/60, dt, 3);
 
     for (const obj of physicsObjects) {
@@ -1007,23 +1040,24 @@ function animate() {
         obj.mesh.quaternion.copy(obj.body.quaternion);
     }
 
+    for (const npc of npcs) npc.update(dt);
+
     cleanupProjectiles(now);
     updateParticles(dt);
 
     frameCount++;
     if (frameCount % 10 === 0) {
-        document.getElementById('objectCount').textContent = `Objects: ${physicsObjects.length}`;
+        document.getElementById('objectCount').textContent = `Objects: ${physicsObjects.length} | NPCs: ${npcs.filter(n=>!n.isRagdoll).length}/${npcs.length}`;
     }
 
     renderer.render(scene, camera);
 }
-
 animate();
 
 window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(innerWidth, innerHeight);
 });
 </script>
 </body>
