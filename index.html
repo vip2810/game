@@ -11,13 +11,15 @@
 
         #blocker {
             position: fixed; inset: 0;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             z-index: 100; cursor: pointer;
         }
-        #blocker h1 { font-size: 48px; color: #ff4444; margin-bottom: 16px; text-shadow: 0 0 20px #ff0000; }
-        #blocker p { color: #ccc; font-size: 18px; margin: 4px 0; }
+        #blocker h1 { font-size: 48px; color: #ff4444; margin-bottom: 20px; text-shadow: 0 0 20px #ff0000; }
+        #blocker .section { margin: 10px 0; }
+        #blocker .section-title { color: #ffaa00; font-size: 14px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 2px; }
+        #blocker p { color: #ccc; font-size: 16px; margin: 3px 0; }
         #blocker .key { color: #ffaa00; font-weight: bold; }
         #blocker .start-hint { margin-top: 30px; color: #888; font-size: 14px; animation: pulse 2s infinite; }
         @keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
@@ -57,15 +59,6 @@
         .weapon-slot .icon { font-size: 24px; margin-bottom: 2px; }
         .weapon-slot .key-hint { font-size: 9px; color: #666; margin-top: 2px; }
 
-        #ammoDisplay {
-            position: fixed; bottom: 30px; right: 30px;
-            color: #fff; font-size: 36px; font-weight: bold;
-            pointer-events: none; z-index: 10;
-            text-shadow: 0 0 10px rgba(255,68,68,0.5);
-        }
-        #ammoDisplay.hidden { display: none; }
-        #ammoDisplay span { font-size: 16px; color: #888; }
-
         #objectCount {
             position: fixed; top: 15px; left: 15px;
             color: #aaa; font-size: 13px;
@@ -73,19 +66,14 @@
         }
         #objectCount.hidden { display: none; }
 
-        #spawnBar {
-            position: fixed; top: 15px; right: 15px;
-            display: flex; gap: 6px;
-            pointer-events: all; z-index: 10;
+        #buildMode {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            color: #4fc3f7; font-size: 16px; font-weight: bold;
+            pointer-events: none; z-index: 10;
+            text-shadow: 0 0 10px rgba(79,195,247,0.5);
+            opacity: 0; transition: opacity 0.3s;
         }
-        #spawnBar.hidden { display: none; }
-        .spawn-btn {
-            padding: 6px 14px; border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(0,0,0,0.5); color: #ccc; border-radius: 6px;
-            cursor: pointer; font-size: 12px; transition: all 0.2s;
-            backdrop-filter: blur(5px);
-        }
-        .spawn-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        #buildMode.show { opacity: 1; }
 
         #hitMarker {
             position: fixed; top: 50%; left: 50%;
@@ -114,11 +102,26 @@
 
 <div id="blocker">
     <h1>3D PHYSICS SHOOTER</h1>
-    <p><span class="key">WASD</span> - Move</p>
-    <p><span class="key">Mouse</span> - Look around</p>
-    <p><span class="key">Left Click</span> - Shoot</p>
-    <p><span class="key">1-4</span> - Switch weapons</p>
-    <p><span class="key">R</span> - Reset scene</p>
+    <div class="section">
+        <div class="section-title">Movement</div>
+        <p><span class="key">WASD</span> - Move &nbsp; <span class="key">Mouse</span> - Look</p>
+    </div>
+    <div class="section">
+        <div class="section-title">Combat</div>
+        <p><span class="key">Left Click</span> - Shoot &nbsp; <span class="key">1-4</span> - Switch weapons</p>
+    </div>
+    <div class="section">
+        <div class="section-title">Build (place in front of you)</div>
+        <p><span class="key">F</span> - Box &nbsp; <span class="key">G</span> - Plank &nbsp; <span class="key">H</span> - Ball</p>
+        <p><span class="key">T</span> - Tower &nbsp; <span class="key">Y</span> - Wall &nbsp; <span class="key">U</span> - Pyramid</p>
+    </div>
+    <div class="section">
+        <div class="section-title">Ragdolls</div>
+        <p><span class="key">V</span> - Spawn ragdoll &nbsp; <span class="key">B</span> - Spawn 5 ragdolls</p>
+    </div>
+    <div class="section">
+        <p><span class="key">R</span> - Reset &nbsp; <span class="key">C</span> - Clear all</p>
+    </div>
     <p class="start-hint">Click anywhere to start</p>
 </div>
 
@@ -164,17 +167,8 @@
     </div>
 </div>
 
-<div id="ammoDisplay" class="hidden"><span>AMMO</span><br>&#8734;</div>
-
 <div id="objectCount" class="hidden">Objects: 0</div>
-
-<div id="spawnBar" class="hidden">
-    <button class="spawn-btn" onclick="spawnTower()">Tower</button>
-    <button class="spawn-btn" onclick="spawnWall()">Wall</button>
-    <button class="spawn-btn" onclick="spawnPyramid()">Pyramid</button>
-    <button class="spawn-btn" onclick="spawnStack()">Stack</button>
-    <button class="spawn-btn" onclick="clearDynamic()">Clear</button>
-</div>
+<div id="buildMode">BUILD MODE</div>
 
 <script type="importmap">
 {
@@ -190,13 +184,12 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 
-// --- Scene setup ---
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1a1a2e);
-scene.fog = new THREE.FogExp2(0x1a1a2e, 0.008);
+scene.fog = new THREE.FogExp2(0x1a1a2e, 0.006);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 5, 25);
+camera.position.set(0, 5, 30);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -207,83 +200,82 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
 document.body.appendChild(renderer.domElement);
 
-// --- Physics world ---
-const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -20, 0) });
+// --- Physics ---
+const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -25, 0) });
 world.broadphase = new CANNON.SAPBroadphase(world);
 world.allowSleep = true;
-world.solver.iterations = 10;
+world.solver.iterations = 15;
+world.solver.tolerance = 0.001;
 
-const defaultMaterial = new CANNON.Material('default');
-world.defaultContactMaterial = new CANNON.ContactMaterial(defaultMaterial, defaultMaterial, {
-    friction: 0.4,
-    restitution: 0.3
-});
+const stoneMat = new CANNON.Material('stone');
+const metalMat = new CANNON.Material('metal');
+const fleshMat = new CANNON.Material('flesh');
+
+world.addContactMaterial(new CANNON.ContactMaterial(stoneMat, stoneMat, { friction: 0.6, restitution: 0.2 }));
+world.addContactMaterial(new CANNON.ContactMaterial(metalMat, stoneMat, { friction: 0.3, restitution: 0.4 }));
+world.addContactMaterial(new CANNON.ContactMaterial(metalMat, metalMat, { friction: 0.2, restitution: 0.5 }));
+world.addContactMaterial(new CANNON.ContactMaterial(fleshMat, stoneMat, { friction: 0.8, restitution: 0.1 }));
+world.addContactMaterial(new CANNON.ContactMaterial(fleshMat, metalMat, { friction: 0.5, restitution: 0.15 }));
+world.addContactMaterial(new CANNON.ContactMaterial(fleshMat, fleshMat, { friction: 0.7, restitution: 0.05 }));
+world.defaultContactMaterial = new CANNON.ContactMaterial(stoneMat, stoneMat, { friction: 0.5, restitution: 0.3 });
 
 // --- Lighting ---
-const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
-scene.add(ambientLight);
+scene.add(new THREE.AmbientLight(0x404060, 0.7));
 
 const dirLight = new THREE.DirectionalLight(0xffeedd, 1.5);
 dirLight.position.set(30, 50, 20);
 dirLight.castShadow = true;
 dirLight.shadow.mapSize.set(2048, 2048);
-dirLight.shadow.camera.left = -60;
-dirLight.shadow.camera.right = 60;
-dirLight.shadow.camera.top = 60;
-dirLight.shadow.camera.bottom = -60;
+dirLight.shadow.camera.left = -80;
+dirLight.shadow.camera.right = 80;
+dirLight.shadow.camera.top = 80;
+dirLight.shadow.camera.bottom = -80;
 dirLight.shadow.camera.near = 0.5;
-dirLight.shadow.camera.far = 150;
+dirLight.shadow.camera.far = 200;
 scene.add(dirLight);
 
-const fillLight = new THREE.DirectionalLight(0x4466aa, 0.4);
-fillLight.position.set(-20, 20, -10);
-scene.add(fillLight);
-
-const pointLight = new THREE.PointLight(0xff4400, 0.5, 50);
-pointLight.position.set(0, 10, 0);
-scene.add(pointLight);
+scene.add(new THREE.DirectionalLight(0x4466aa, 0.4).translateX(-20).translateY(20).translateZ(-10));
+const pl = new THREE.PointLight(0xff4400, 0.5, 50);
+pl.position.set(0, 10, 0);
+scene.add(pl);
 
 // --- Ground ---
-const groundGeo = new THREE.PlaneGeometry(200, 200);
-const groundMat = new THREE.MeshStandardMaterial({
-    color: 0x2a2a3e,
-    roughness: 0.8,
-    metalness: 0.2,
-});
-const ground = new THREE.Mesh(groundGeo, groundMat);
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
+const groundMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(300, 300),
+    new THREE.MeshStandardMaterial({ color: 0x2a2a3e, roughness: 0.8, metalness: 0.2 })
+);
+groundMesh.rotation.x = -Math.PI / 2;
+groundMesh.receiveShadow = true;
+scene.add(groundMesh);
 
-const gridHelper = new THREE.GridHelper(200, 50, 0x3a3a5a, 0x2a2a4a);
+const gridHelper = new THREE.GridHelper(300, 75, 0x3a3a5a, 0x2a2a4a);
 gridHelper.position.y = 0.01;
 scene.add(gridHelper);
 
-const groundBody = new CANNON.Body({
-    type: CANNON.Body.STATIC,
-    shape: new CANNON.Plane(),
-    material: defaultMaterial
-});
+const groundBody = new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Plane(), material: stoneMat });
 groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 world.addBody(groundBody);
 
-// invisible walls
-for (const [px, pz, rx, rz] of [[0, -100, 0, 0], [0, 100, 0, Math.PI], [-100, 0, 0, Math.PI/2], [100, 0, 0, -Math.PI/2]]) {
-    const wall = new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Plane(), material: defaultMaterial });
-    wall.position.set(px, 0, pz);
-    wall.quaternion.setFromEuler(0, rz, rx);
-    world.addBody(wall);
+for (const [px, pz, ry] of [[0, -150, 0], [0, 150, Math.PI], [-150, 0, Math.PI/2], [150, 0, -Math.PI/2]]) {
+    const w = new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Plane(), material: stoneMat });
+    w.position.set(px, 0, pz);
+    w.quaternion.setFromEuler(0, ry, 0);
+    world.addBody(w);
 }
 
-// --- Tracked objects ---
+// --- Objects tracking ---
 const physicsObjects = [];
-
+const ragdolls = [];
+const projectiles = [];
+const explosionParticles = [];
 const boxColors = [0xff6b6b, 0xffd93d, 0x6bcb77, 0x4d96ff, 0xff8cc8, 0xa66cff, 0xff922b, 0x20c997, 0x748ffc, 0xe599f7];
+const skinColors = [0xe8beac, 0xd4a574, 0xc68642, 0x8d5524, 0xf5d0c5, 0xdba88a];
 
 function createBox(x, y, z, w, h, d, color, mass = 1) {
-    const geo = new THREE.BoxGeometry(w, h, d);
-    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.3 });
-    const mesh = new THREE.Mesh(geo, mat);
+    const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(w, h, d),
+        new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.3 })
+    );
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     scene.add(mesh);
@@ -292,20 +284,20 @@ function createBox(x, y, z, w, h, d, color, mass = 1) {
         mass,
         shape: new CANNON.Box(new CANNON.Vec3(w/2, h/2, d/2)),
         position: new CANNON.Vec3(x, y, z),
-        material: defaultMaterial
+        material: stoneMat,
+        linearDamping: 0.05,
+        angularDamping: 0.2
     });
-    body.linearDamping = 0.1;
-    body.angularDamping = 0.3;
     world.addBody(body);
-
     physicsObjects.push({ mesh, body, type: 'dynamic' });
     return { mesh, body };
 }
 
-function createSphere(x, y, z, r, color, mass = 2) {
-    const geo = new THREE.SphereGeometry(r, 16, 16);
-    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.5 });
-    const mesh = new THREE.Mesh(geo, mat);
+function createSphere(x, y, z, r, color, mass = 2, mat = metalMat) {
+    const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(r, 16, 16),
+        new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.5 })
+    );
     mesh.castShadow = true;
     scene.add(mesh);
 
@@ -313,21 +305,361 @@ function createSphere(x, y, z, r, color, mass = 2) {
         mass,
         shape: new CANNON.Sphere(r),
         position: new CANNON.Vec3(x, y, z),
-        material: defaultMaterial
+        material: mat,
+        linearDamping: 0.05,
+        angularDamping: 0.2
     });
-    body.linearDamping = 0.1;
-    body.angularDamping = 0.3;
     world.addBody(body);
-
     physicsObjects.push({ mesh, body, type: 'dynamic' });
     return { mesh, body };
 }
 
-// --- Scene builders ---
-function clearDynamic() {
+function createCylinder(x, y, z, rTop, rBot, h, color, mass = 1) {
+    const mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(rTop, rBot, h, 12),
+        new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.3 })
+    );
+    mesh.castShadow = true;
+    scene.add(mesh);
+
+    const body = new CANNON.Body({
+        mass,
+        shape: new CANNON.Cylinder(rTop, rBot, h, 12),
+        position: new CANNON.Vec3(x, y, z),
+        material: stoneMat,
+        linearDamping: 0.05,
+        angularDamping: 0.2
+    });
+    world.addBody(body);
+    physicsObjects.push({ mesh, body, type: 'dynamic' });
+    return { mesh, body };
+}
+
+// --- Get spawn position in front of camera ---
+function getSpawnPos(dist = 10) {
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+    dir.y = 0;
+    dir.normalize();
+    return {
+        x: camera.position.x + dir.x * dist,
+        z: camera.position.z + dir.z * dist
+    };
+}
+
+// --- Build functions (spawn in front of player) ---
+function buildBox() {
+    const p = getSpawnPos(8);
+    const color = boxColors[Math.floor(Math.random() * boxColors.length)];
+    createBox(p.x, 1, p.z, 1.2, 1.2, 1.2, color);
+    showBuildHint('Box placed');
+}
+
+function buildPlank() {
+    const p = getSpawnPos(8);
+    const color = boxColors[Math.floor(Math.random() * boxColors.length)];
+    createBox(p.x, 0.75, p.z, 4, 0.4, 1.2, color);
+    showBuildHint('Plank placed');
+}
+
+function buildBall() {
+    const p = getSpawnPos(8);
+    const color = boxColors[Math.floor(Math.random() * boxColors.length)];
+    createSphere(p.x, 1, p.z, 0.6, color, 1.5, stoneMat);
+    showBuildHint('Ball placed');
+}
+
+function buildTower() {
+    const p = getSpawnPos(12);
+    for (let row = 0; row < 8; row++) {
+        const c = boxColors[row % boxColors.length];
+        if (row % 2 === 0) {
+            createBox(p.x - 0.6, row * 1.05 + 0.525, p.z, 1, 1, 2.5, c);
+            createBox(p.x + 0.6, row * 1.05 + 0.525, p.z, 1, 1, 2.5, c);
+        } else {
+            createBox(p.x, row * 1.05 + 0.525, p.z - 0.6, 2.5, 1, 1, c);
+            createBox(p.x, row * 1.05 + 0.525, p.z + 0.6, 2.5, 1, 1, c);
+        }
+    }
+    showBuildHint('Tower built');
+}
+
+function buildWall() {
+    const p = getSpawnPos(14);
+    const cols = 8, rows = 6;
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            const offset = (r % 2) * 0.6;
+            const color = boxColors[(r + c) % boxColors.length];
+            createBox(p.x + (c - cols/2) * 1.2 + offset, r * 1.05 + 0.525, p.z, 1.1, 1, 1.1, color);
+        }
+    }
+    showBuildHint('Wall built');
+}
+
+function buildPyramid() {
+    const p = getSpawnPos(14);
+    const base = 6;
+    for (let row = 0; row < base; row++) {
+        const count = base - row;
+        for (let i = 0; i < count; i++) {
+            const color = boxColors[(row + i) % boxColors.length];
+            createBox(p.x + (i - (count-1)/2) * 1.15, row * 1.05 + 0.525, p.z, 1.1, 1, 1.1, color);
+        }
+    }
+    showBuildHint('Pyramid built');
+}
+
+let buildHintTimeout;
+function showBuildHint(text) {
+    const el = document.getElementById('buildMode');
+    el.textContent = text;
+    el.classList.add('show');
+    clearTimeout(buildHintTimeout);
+    buildHintTimeout = setTimeout(() => el.classList.remove('show'), 1200);
+}
+
+// =====================================================
+// RAGDOLL SYSTEM
+// =====================================================
+
+function createRagdoll(x, y, z) {
+    const skinColor = skinColors[Math.floor(Math.random() * skinColors.length)];
+    const shirtColor = boxColors[Math.floor(Math.random() * boxColors.length)];
+    const pantsColor = [0x2244aa, 0x333333, 0x554422, 0x224422, 0x442222][Math.floor(Math.random() * 5)];
+
+    const parts = [];
+    const constraints = [];
+
+    function addPart(name, px, py, pz, shape, cannonShape, color, mass) {
+        const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.1 });
+        const mesh = new THREE.Mesh(shape, mat);
+        mesh.castShadow = true;
+        scene.add(mesh);
+
+        const body = new CANNON.Body({
+            mass,
+            position: new CANNON.Vec3(x + px, y + py, z + pz),
+            material: fleshMat,
+            linearDamping: 0.15,
+            angularDamping: 0.4
+        });
+        body.addShape(cannonShape);
+        world.addBody(body);
+
+        const part = { name, mesh, body };
+        parts.push(part);
+        physicsObjects.push({ mesh, body, type: 'ragdoll' });
+        return part;
+    }
+
+    // Head
+    const head = addPart('head', 0, 3.6, 0,
+        new THREE.SphereGeometry(0.35, 12, 12),
+        new CANNON.Sphere(0.35),
+        skinColor, 2
+    );
+
+    // Torso (upper)
+    const upperTorso = addPart('upperTorso', 0, 2.8, 0,
+        new THREE.BoxGeometry(0.9, 0.7, 0.45),
+        new CANNON.Box(new CANNON.Vec3(0.45, 0.35, 0.225)),
+        shirtColor, 4
+    );
+
+    // Torso (lower)
+    const lowerTorso = addPart('lowerTorso', 0, 2.05, 0,
+        new THREE.BoxGeometry(0.8, 0.7, 0.4),
+        new CANNON.Box(new CANNON.Vec3(0.4, 0.35, 0.2)),
+        shirtColor, 3
+    );
+
+    // Pelvis
+    const pelvis = addPart('pelvis', 0, 1.35, 0,
+        new THREE.BoxGeometry(0.75, 0.4, 0.4),
+        new CANNON.Box(new CANNON.Vec3(0.375, 0.2, 0.2)),
+        pantsColor, 3
+    );
+
+    // Upper arms
+    const leftUpperArm = addPart('leftUpperArm', -0.7, 2.8, 0,
+        new THREE.CylinderGeometry(0.12, 0.11, 0.6, 8),
+        new CANNON.Cylinder(0.12, 0.11, 0.6, 8),
+        skinColor, 1
+    );
+    const rightUpperArm = addPart('rightUpperArm', 0.7, 2.8, 0,
+        new THREE.CylinderGeometry(0.12, 0.11, 0.6, 8),
+        new CANNON.Cylinder(0.12, 0.11, 0.6, 8),
+        skinColor, 1
+    );
+
+    // Lower arms
+    const leftLowerArm = addPart('leftLowerArm', -0.7, 2.1, 0,
+        new THREE.CylinderGeometry(0.1, 0.09, 0.6, 8),
+        new CANNON.Cylinder(0.1, 0.09, 0.6, 8),
+        skinColor, 0.8
+    );
+    const rightLowerArm = addPart('rightLowerArm', 0.7, 2.1, 0,
+        new THREE.CylinderGeometry(0.1, 0.09, 0.6, 8),
+        new CANNON.Cylinder(0.1, 0.09, 0.6, 8),
+        skinColor, 0.8
+    );
+
+    // Upper legs
+    const leftUpperLeg = addPart('leftUpperLeg', -0.22, 0.85, 0,
+        new THREE.CylinderGeometry(0.14, 0.13, 0.7, 8),
+        new CANNON.Cylinder(0.14, 0.13, 0.7, 8),
+        pantsColor, 2
+    );
+    const rightUpperLeg = addPart('rightUpperLeg', 0.22, 0.85, 0,
+        new THREE.CylinderGeometry(0.14, 0.13, 0.7, 8),
+        new CANNON.Cylinder(0.14, 0.13, 0.7, 8),
+        pantsColor, 2
+    );
+
+    // Lower legs
+    const leftLowerLeg = addPart('leftLowerLeg', -0.22, 0.2, 0,
+        new THREE.CylinderGeometry(0.12, 0.1, 0.7, 8),
+        new CANNON.Cylinder(0.12, 0.1, 0.7, 8),
+        pantsColor, 1.5
+    );
+    const rightLowerLeg = addPart('rightLowerLeg', 0.22, 0.2, 0,
+        new THREE.CylinderGeometry(0.12, 0.1, 0.7, 8),
+        new CANNON.Cylinder(0.12, 0.1, 0.7, 8),
+        pantsColor, 1.5
+    );
+
+    // --- Constraints (joints) ---
+    function addConeTwist(bodyA, bodyB, pivotA, pivotB, axisA, axisB, angle) {
+        const c = new CANNON.ConeTwistConstraint(bodyA, bodyB, {
+            pivotA: new CANNON.Vec3(...pivotA),
+            pivotB: new CANNON.Vec3(...pivotB),
+            axisA: new CANNON.Vec3(...axisA),
+            axisB: new CANNON.Vec3(...axisB),
+            angle,
+            twistAngle: angle * 0.6
+        });
+        world.addConstraint(c);
+        constraints.push(c);
+        return c;
+    }
+
+    function addHinge(bodyA, bodyB, pivotA, pivotB, axisA, axisB, minAngle, maxAngle) {
+        const c = new CANNON.HingeConstraint(bodyA, bodyB, {
+            pivotA: new CANNON.Vec3(...pivotA),
+            pivotB: new CANNON.Vec3(...pivotB),
+            axisA: new CANNON.Vec3(...axisA),
+            axisB: new CANNON.Vec3(...axisB),
+        });
+        if (minAngle !== undefined) {
+            c.setMotorMaxForce(0);
+        }
+        world.addConstraint(c);
+        constraints.push(c);
+        return c;
+    }
+
+    // Neck: head to upper torso
+    addConeTwist(head.body, upperTorso.body,
+        [0, -0.35, 0], [0, 0.4, 0],
+        [0, 1, 0], [0, 1, 0],
+        Math.PI / 6
+    );
+
+    // Spine upper: upper torso to lower torso
+    addConeTwist(upperTorso.body, lowerTorso.body,
+        [0, -0.35, 0], [0, 0.35, 0],
+        [0, 1, 0], [0, 1, 0],
+        Math.PI / 8
+    );
+
+    // Spine lower: lower torso to pelvis
+    addConeTwist(lowerTorso.body, pelvis.body,
+        [0, -0.35, 0], [0, 0.2, 0],
+        [0, 1, 0], [0, 1, 0],
+        Math.PI / 8
+    );
+
+    // Left shoulder
+    addConeTwist(upperTorso.body, leftUpperArm.body,
+        [-0.5, 0.15, 0], [0, 0.3, 0],
+        [-1, 0, 0], [0, 1, 0],
+        Math.PI / 2.5
+    );
+
+    // Right shoulder
+    addConeTwist(upperTorso.body, rightUpperArm.body,
+        [0.5, 0.15, 0], [0, 0.3, 0],
+        [1, 0, 0], [0, 1, 0],
+        Math.PI / 2.5
+    );
+
+    // Left elbow
+    addHinge(leftUpperArm.body, leftLowerArm.body,
+        [0, -0.3, 0], [0, 0.3, 0],
+        [1, 0, 0], [1, 0, 0],
+        0, Math.PI * 0.8
+    );
+
+    // Right elbow
+    addHinge(rightUpperArm.body, rightLowerArm.body,
+        [0, -0.3, 0], [0, 0.3, 0],
+        [1, 0, 0], [1, 0, 0],
+        0, Math.PI * 0.8
+    );
+
+    // Left hip
+    addConeTwist(pelvis.body, leftUpperLeg.body,
+        [-0.22, -0.2, 0], [0, 0.35, 0],
+        [0, -1, 0], [0, 1, 0],
+        Math.PI / 4
+    );
+
+    // Right hip
+    addConeTwist(pelvis.body, rightUpperLeg.body,
+        [0.22, -0.2, 0], [0, 0.35, 0],
+        [0, -1, 0], [0, 1, 0],
+        Math.PI / 4
+    );
+
+    // Left knee
+    addHinge(leftUpperLeg.body, leftLowerLeg.body,
+        [0, -0.35, 0], [0, 0.35, 0],
+        [1, 0, 0], [1, 0, 0],
+        0, Math.PI * 0.7
+    );
+
+    // Right knee
+    addHinge(rightUpperLeg.body, rightLowerLeg.body,
+        [0, -0.35, 0], [0, 0.35, 0],
+        [1, 0, 0], [1, 0, 0],
+        0, Math.PI * 0.7
+    );
+
+    const ragdoll = { parts, constraints };
+    ragdolls.push(ragdoll);
+    return ragdoll;
+}
+
+function spawnRagdoll() {
+    const p = getSpawnPos(10);
+    createRagdoll(p.x, 4, p.z);
+    showBuildHint('Ragdoll spawned');
+}
+
+function spawnMultipleRagdolls() {
+    const p = getSpawnPos(12);
+    for (let i = 0; i < 5; i++) {
+        createRagdoll(p.x + (i - 2) * 2, 4 + i * 0.5, p.z + (Math.random()-0.5)*3);
+    }
+    showBuildHint('5 Ragdolls spawned');
+}
+
+// --- Clear ---
+function clearAll() {
     for (let i = physicsObjects.length - 1; i >= 0; i--) {
         const obj = physicsObjects[i];
-        if (obj.type === 'dynamic') {
+        if (obj.type !== 'static') {
             scene.remove(obj.mesh);
             world.removeBody(obj.body);
             obj.mesh.geometry.dispose();
@@ -335,12 +667,24 @@ function clearDynamic() {
             physicsObjects.splice(i, 1);
         }
     }
+    for (const r of ragdolls) {
+        for (const c of r.constraints) {
+            world.removeConstraint(c);
+        }
+    }
+    ragdolls.length = 0;
 }
-window.clearDynamic = clearDynamic;
 
-function spawnTower() {
-    const bx = (Math.random() - 0.5) * 20;
-    const bz = (Math.random() - 0.5) * 20 - 10;
+function resetScene() {
+    clearAll();
+    buildTowerAt(5, -10);
+    buildWallAt(-8, -18);
+    buildPyramidAt(0, -14);
+    createRagdoll(-4, 4, -8);
+    createRagdoll(6, 4, -12);
+}
+
+function buildTowerAt(bx, bz) {
     for (let row = 0; row < 8; row++) {
         const c = boxColors[row % boxColors.length];
         if (row % 2 === 0) {
@@ -352,11 +696,8 @@ function spawnTower() {
         }
     }
 }
-window.spawnTower = spawnTower;
 
-function spawnWall() {
-    const bx = (Math.random() - 0.5) * 20;
-    const bz = (Math.random() - 0.5) * 10 - 15;
+function buildWallAt(bx, bz) {
     const cols = 8, rows = 6;
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -366,48 +707,23 @@ function spawnWall() {
         }
     }
 }
-window.spawnWall = spawnWall;
 
-function spawnPyramid() {
-    const bx = (Math.random() - 0.5) * 20;
-    const bz = (Math.random() - 0.5) * 10 - 10;
+function buildPyramidAt(bx, bz) {
     const base = 6;
     for (let row = 0; row < base; row++) {
         const count = base - row;
         for (let i = 0; i < count; i++) {
             const color = boxColors[(row + i) % boxColors.length];
-            createBox(
-                bx + (i - (count - 1) / 2) * 1.15,
-                row * 1.05 + 0.525,
-                bz,
-                1.1, 1, 1.1, color
-            );
+            createBox(bx + (i - (count-1)/2) * 1.15, row * 1.05 + 0.525, bz, 1.1, 1, 1.1, color);
         }
     }
 }
-window.spawnPyramid = spawnPyramid;
 
-function spawnStack() {
-    const bx = (Math.random() - 0.5) * 20;
-    const bz = (Math.random() - 0.5) * 10 - 10;
-    for (let i = 0; i < 10; i++) {
-        const color = boxColors[i % boxColors.length];
-        createSphere(bx + (Math.random()-0.5)*0.3, i * 1.2 + 0.6, bz + (Math.random()-0.5)*0.3, 0.5, color);
-    }
-}
-window.spawnStack = spawnStack;
-
-function buildInitialScene() {
-    spawnTower();
-    spawnWall();
-    spawnPyramid();
-}
-
-buildInitialScene();
+resetScene();
 
 // --- FPS Controls ---
 let locked = false;
-const velocity = new THREE.Vector3();
+const moveVelocity = new THREE.Vector3();
 const euler = new THREE.Euler(0, 0, 0, 'YXZ');
 const keys = {};
 let pitch = 0, yaw = 0;
@@ -421,9 +737,7 @@ document.addEventListener('pointerlockchange', () => {
     document.getElementById('blocker').style.display = locked ? 'none' : 'flex';
     document.getElementById('hud').classList.toggle('hidden', !locked);
     document.getElementById('crosshair').classList.toggle('hidden', !locked);
-    document.getElementById('ammoDisplay').classList.toggle('hidden', !locked);
     document.getElementById('objectCount').classList.toggle('hidden', !locked);
-    document.getElementById('spawnBar').classList.toggle('hidden', !locked);
 });
 
 document.addEventListener('mousemove', (e) => {
@@ -439,13 +753,22 @@ document.addEventListener('keydown', (e) => { keys[e.code] = true; });
 document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
 document.addEventListener('keydown', (e) => {
-    if (e.code === 'Digit1') selectWeapon(0);
-    if (e.code === 'Digit2') selectWeapon(1);
-    if (e.code === 'Digit3') selectWeapon(2);
-    if (e.code === 'Digit4') selectWeapon(3);
-    if (e.code === 'KeyR') {
-        clearDynamic();
-        buildInitialScene();
+    if (!locked) return;
+    switch (e.code) {
+        case 'Digit1': selectWeapon(0); break;
+        case 'Digit2': selectWeapon(1); break;
+        case 'Digit3': selectWeapon(2); break;
+        case 'Digit4': selectWeapon(3); break;
+        case 'KeyR': resetScene(); break;
+        case 'KeyC': clearAll(); break;
+        case 'KeyF': buildBox(); break;
+        case 'KeyG': buildPlank(); break;
+        case 'KeyH': buildBall(); break;
+        case 'KeyT': buildTower(); break;
+        case 'KeyY': buildWall(); break;
+        case 'KeyU': buildPyramid(); break;
+        case 'KeyV': spawnRagdoll(); break;
+        case 'KeyB': spawnMultipleRagdolls(); break;
     }
 });
 
@@ -458,15 +781,15 @@ function updateMovement(dt) {
     dir.normalize();
     const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
 
-    velocity.set(0, 0, 0);
-    if (keys['KeyW']) velocity.add(dir);
-    if (keys['KeyS']) velocity.sub(dir);
-    if (keys['KeyD']) velocity.add(right);
-    if (keys['KeyA']) velocity.sub(right);
+    moveVelocity.set(0, 0, 0);
+    if (keys['KeyW']) moveVelocity.add(dir);
+    if (keys['KeyS']) moveVelocity.sub(dir);
+    if (keys['KeyD']) moveVelocity.add(right);
+    if (keys['KeyA']) moveVelocity.sub(right);
 
-    if (velocity.length() > 0) {
-        velocity.normalize().multiplyScalar(speed * dt);
-        camera.position.add(velocity);
+    if (moveVelocity.length() > 0) {
+        moveVelocity.normalize().multiplyScalar(speed * dt);
+        camera.position.add(moveVelocity);
     }
     camera.position.y = 5;
 }
@@ -474,9 +797,9 @@ function updateMovement(dt) {
 // --- Weapons ---
 const weapons = [
     { name: 'Cannon', speed: 80, size: 0.5, mass: 8, color: 0xff4444, count: 1, spread: 0, explosive: false, cooldown: 0.3 },
-    { name: 'Shotgun', speed: 60, size: 0.2, mass: 1, color: 0xffaa00, count: 8, spread: 0.08, explosive: false, cooldown: 0.6 },
+    { name: 'Shotgun', speed: 60, size: 0.2, mass: 1.5, color: 0xffaa00, count: 8, spread: 0.08, explosive: false, cooldown: 0.6 },
     { name: 'Explosive', speed: 50, size: 0.4, mass: 5, color: 0xff2200, count: 1, spread: 0, explosive: true, cooldown: 0.8 },
-    { name: 'Sniper', speed: 200, size: 0.15, mass: 15, color: 0x44aaff, count: 1, spread: 0, explosive: false, cooldown: 0.2 },
+    { name: 'Sniper', speed: 200, size: 0.15, mass: 20, color: 0x44aaff, count: 1, spread: 0, explosive: false, cooldown: 0.2 },
 ];
 
 let currentWeapon = 0;
@@ -488,10 +811,6 @@ function selectWeapon(idx) {
         el.classList.toggle('active', i === idx);
     });
 }
-
-// --- Shooting ---
-const projectiles = [];
-const explosionParticles = [];
 
 function shoot() {
     const now = performance.now() / 1000;
@@ -512,33 +831,34 @@ function shoot() {
         }
 
         const startPos = camera.position.clone().add(d.clone().multiplyScalar(1.5));
-        const obj = createSphere(startPos.x, startPos.y, startPos.z, wp.size, wp.color, wp.mass);
+        const obj = createSphere(startPos.x, startPos.y, startPos.z, wp.size, wp.color, wp.mass, metalMat);
 
         obj.body.velocity.set(d.x * wp.speed, d.y * wp.speed, d.z * wp.speed);
-        obj.body.collisionResponse = true;
+        obj.body.allowSleep = false;
 
         if (wp.explosive) {
-            obj.body.addEventListener('collide', (e) => {
-                explode(obj.body.position, 12, 60);
+            let exploded = false;
+            obj.body.addEventListener('collide', () => {
+                if (exploded) return;
+                exploded = true;
+                explode(obj.body.position, 14, 80);
                 setTimeout(() => {
-                    const idx = physicsObjects.indexOf(obj);
-                    if (idx !== -1) {
+                    const idx2 = physicsObjects.indexOf(obj);
+                    if (idx2 !== -1) {
                         scene.remove(obj.mesh);
                         world.removeBody(obj.body);
                         obj.mesh.geometry.dispose();
                         obj.mesh.material.dispose();
-                        physicsObjects.splice(idx, 1);
+                        physicsObjects.splice(idx2, 1);
                     }
                 }, 0);
             });
         }
 
         obj.body.addEventListener('collide', () => showHitMarker());
-
         projectiles.push({ obj, time: now });
     }
 
-    // muzzle flash
     const mf = document.getElementById('muzzleFlash');
     mf.classList.remove('flash');
     void mf.offsetWidth;
@@ -563,7 +883,7 @@ function explode(position, radius, force) {
             const strength = force * (1 - dist / radius);
             const impulse = new CANNON.Vec3(
                 (dx / dist) * strength,
-                (dy / dist) * strength + strength * 0.5,
+                (dy / dist) * strength + strength * 0.4,
                 (dz / dist) * strength
             );
             obj.body.applyImpulse(impulse);
@@ -571,32 +891,29 @@ function explode(position, radius, force) {
         }
     }
 
-    // visual explosion
-    for (let i = 0; i < 30; i++) {
-        const geo = new THREE.SphereGeometry(0.1 + Math.random() * 0.2, 6, 6);
+    for (let i = 0; i < 40; i++) {
+        const geo = new THREE.SphereGeometry(0.1 + Math.random() * 0.25, 6, 6);
         const mat = new THREE.MeshBasicMaterial({
-            color: new THREE.Color().setHSL(0.05 + Math.random() * 0.08, 1, 0.5 + Math.random() * 0.3)
+            color: new THREE.Color().setHSL(0.03 + Math.random() * 0.1, 1, 0.4 + Math.random() * 0.4)
         });
         const particle = new THREE.Mesh(geo, mat);
         particle.position.set(position.x, position.y, position.z);
         scene.add(particle);
-
         explosionParticles.push({
             mesh: particle,
             velocity: new THREE.Vector3(
-                (Math.random() - 0.5) * 20,
-                Math.random() * 15,
-                (Math.random() - 0.5) * 20
+                (Math.random() - 0.5) * 25,
+                Math.random() * 18,
+                (Math.random() - 0.5) * 25
             ),
             life: 1.0
         });
     }
 
-    // explosion light flash
-    const light = new THREE.PointLight(0xff4400, 5, 20);
+    const light = new THREE.PointLight(0xff4400, 8, 30);
     light.position.set(position.x, position.y, position.z);
     scene.add(light);
-    setTimeout(() => scene.remove(light), 200);
+    setTimeout(() => scene.remove(light), 250);
 }
 
 document.addEventListener('mousedown', (e) => {
@@ -604,10 +921,10 @@ document.addEventListener('mousedown', (e) => {
     shoot();
 });
 
-// --- Cleanup old projectiles ---
+// --- Cleanup ---
 function cleanupProjectiles(now) {
     for (let i = projectiles.length - 1; i >= 0; i--) {
-        if (now - projectiles[i].time > 8) {
+        if (now - projectiles[i].time > 10) {
             const obj = projectiles[i].obj;
             const idx = physicsObjects.indexOf(obj);
             if (idx !== -1) {
@@ -622,7 +939,6 @@ function cleanupProjectiles(now) {
     }
 }
 
-// --- Update explosion particles ---
 function updateParticles(dt) {
     for (let i = explosionParticles.length - 1; i >= 0; i--) {
         const p = explosionParticles[i];
@@ -631,7 +947,7 @@ function updateParticles(dt) {
         p.life -= dt * 2;
         p.mesh.material.opacity = Math.max(0, p.life);
         p.mesh.material.transparent = true;
-        p.mesh.scale.setScalar(p.life);
+        p.mesh.scale.setScalar(Math.max(0.01, p.life));
 
         if (p.life <= 0) {
             scene.remove(p.mesh);
@@ -642,7 +958,7 @@ function updateParticles(dt) {
     }
 }
 
-// --- Skybox via hemisphere ---
+// --- Skybox ---
 const skyGeo = new THREE.SphereGeometry(400, 32, 32);
 const skyMat = new THREE.ShaderMaterial({
     side: THREE.BackSide,
@@ -696,8 +1012,7 @@ function animate() {
 
     frameCount++;
     if (frameCount % 10 === 0) {
-        const dynCount = physicsObjects.filter(o => o.type === 'dynamic').length;
-        document.getElementById('objectCount').textContent = `Objects: ${dynCount}`;
+        document.getElementById('objectCount').textContent = `Objects: ${physicsObjects.length}`;
     }
 
     renderer.render(scene, camera);
