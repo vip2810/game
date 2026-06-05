@@ -1207,16 +1207,22 @@ function shoot() {
         obj.body.collisionFilterMask = -1 & ~2;
 
         const impactDir = d.clone();
-        let hit = false;
+        const projEntry = { obj, time: now, dead: false, wp, impactDir };
 
         obj.body.addEventListener('collide', (e) => {
-            if (hit) return;
-            hit = true;
+            if (projEntry.dead) return;
+            projEntry.dead = true;
 
-            const pos = obj.body.position;
+            const px = obj.body.position.x;
+            const py = obj.body.position.y;
+            const pz = obj.body.position.z;
+
+            // Hide immediately so it vanishes this frame
+            obj.mesh.visible = false;
+            obj.body.collisionResponse = false;
+
             showHitMarker();
 
-            // NPC ragdoll trigger
             if (e.body.npcRef && !e.body.npcRef.isRagdoll) {
                 const npc = e.body.npcRef;
                 npc.hitCount++;
@@ -1227,34 +1233,22 @@ function shoot() {
             }
 
             if (wp.explosive) {
-                explode(pos, 14, 80);
-                alertNearbyNPCs(pos.x, pos.z, 25);
+                explode({ x: px, y: py, z: pz }, 14, 80);
+                alertNearbyNPCs(px, pz, 25);
                 for (const npc of npcs) {
                     if (npc.isRagdoll) continue;
-                    const dx = npc.body.position.x - pos.x;
-                    const dz = npc.body.position.z - pos.z;
+                    const dx = npc.body.position.x - px;
+                    const dz = npc.body.position.z - pz;
                     if (dx*dx+dz*dz < 10*10) {
                         npc.convertToRagdoll(40, { x: dx*0.5, y: 1, z: dz*0.5 });
                     }
                 }
-            } else {
-                spawnImpactEffect(pos, wp.color, wp.size);
             }
 
-            // Remove projectile
-            setTimeout(() => {
-                const idx2 = physicsObjects.indexOf(obj);
-                if (idx2 !== -1) {
-                    scene.remove(obj.mesh); world.removeBody(obj.body);
-                    obj.mesh.geometry.dispose(); obj.mesh.material.dispose();
-                    physicsObjects.splice(idx2, 1);
-                }
-                const pidx = projectiles.findIndex(p => p.obj === obj);
-                if (pidx !== -1) projectiles.splice(pidx, 1);
-            }, 0);
+            spawnImpactEffect({ x: px, y: py, z: pz }, wp.color, wp.size);
         });
 
-        projectiles.push({ obj, time: now });
+        projectiles.push(projEntry);
     }
 
     const mf = document.getElementById('muzzleFlash');
@@ -1345,12 +1339,23 @@ function explode(position, radius, force) {
 }
 
 // ========== CLEANUP ==========
+function removeProjectile(entry) {
+    const obj = entry.obj;
+    const idx = physicsObjects.indexOf(obj);
+    if (idx !== -1) {
+        scene.remove(obj.mesh);
+        world.removeBody(obj.body);
+        obj.mesh.geometry.dispose();
+        obj.mesh.material.dispose();
+        physicsObjects.splice(idx, 1);
+    }
+}
+
 function cleanupProjectiles(now) {
-    for (let i = projectiles.length-1; i >= 0; i--) {
-        if (now - projectiles[i].time > 10) {
-            const obj = projectiles[i].obj;
-            const idx = physicsObjects.indexOf(obj);
-            if (idx !== -1) { scene.remove(obj.mesh); world.removeBody(obj.body); obj.mesh.geometry.dispose(); obj.mesh.material.dispose(); physicsObjects.splice(idx, 1); }
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        const entry = projectiles[i];
+        if (entry.dead || now - entry.time > 10) {
+            removeProjectile(entry);
             projectiles.splice(i, 1);
         }
     }
